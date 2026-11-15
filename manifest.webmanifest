@@ -1,0 +1,30 @@
+{
+ "name": "Render Prompt Studio",
+ "short_name": "Render Prompt",
+ "description": "สร้าง prompt เรนเดอร์ภาพสถาปัตยกรรมเสมือนจริง",
+ "lang": "th",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#f4f1ec",
+ "theme_color": "#b5562b",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

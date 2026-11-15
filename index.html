@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b5562b">
+<meta name="apple-mobile-web-app-title" content="Render Prompt">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Render Prompt Studio — ตัวสร้าง Prompt เรนเดอร์สถาปัตยกรรม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ec;--card:#fffdf9;--ink:#1d1b18;--mute:#6f6a62;--line:#e2ddd3;
+  --acc:#b5562b;--acc2:#2f4b45;--chip:#f0ebe2;--chipOn:#2f4b45;--ok:#2e7d4f;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#161513;--card:#1f1d1a;--ink:#ece7de;--mute:#a39c90;--line:#34302a;--chip:#2a2723;--chipOn:#6fa596;--acc:#e08a5c;--acc2:#8fc3b5}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.55}
+header{padding:22px 20px 10px;max-width:1240px;margin:auto}
+header h1{margin:0;font-size:22px;letter-spacing:.2px}
+header h1 span{color:var(--acc)}
+header p{margin:4px 0 0;color:var(--mute);font-size:13.5px}
+.wrap{max-width:1240px;margin:auto;padding:10px 20px 60px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 6px;margin-bottom:14px}
+.card h2{font-size:14px;margin:0 0 10px;color:var(--acc2);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--acc2);color:var(--card);border-radius:50%;width:20px;height:20px;display:inline-grid;place-items:center;font-size:11px}
+.field{margin-bottom:12px}
+.field>label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:5px;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer;transition:.12s}
+.chip:hover{border-color:var(--acc2)}
+.chip.on{background:var(--chipOn);color:var(--card);border-color:var(--chipOn)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (max-width:560px){.modes{grid-template-columns:repeat(2,1fr)}}
+.mode{border:1.5px solid var(--line);background:var(--chip);border-radius:12px;padding:10px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
+.mode b{display:block;font-size:13.5px}
+.mode small{color:var(--mute);font-size:11.5px;line-height:1.35;display:block;margin-top:2px}
+.mode.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--card))}
+textarea,input[type=text],select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+textarea{min-height:64px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.rangeLbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute)}
+.out{position:sticky;top:12px}
+.outbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.outbox h3{margin:0 0 8px;font-size:13px;display:flex;justify-content:space-between;align-items:center;color:var(--acc2);text-transform:uppercase;letter-spacing:.5px}
+pre{white-space:pre-wrap;word-break:break-word;font-family:"IBM Plex Mono",monospace;font-size:12.6px;line-height:1.55;margin:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px;max-height:46vh;overflow:auto}
+.btn{border:none;background:var(--acc);color:#fff;border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--acc2);border:1px solid var(--line)}
+.btn.ok{background:var(--ok)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tip{font-size:12.5px;color:var(--mute);background:var(--bg);border-left:3px solid var(--acc);padding:8px 10px;border-radius:6px;margin-top:8px}
+.tip b{color:var(--ink)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.hidden{display:none!important}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:10px;text-align:center;color:var(--mute);font-size:12.5px;cursor:pointer}
+.drop img{max-width:100%;max-height:180px;border-radius:8px;display:block;margin:6px auto 0}
+.count{font-weight:400;color:var(--mute);font-size:11px;text-transform:none;letter-spacing:0}
+.ref{display:grid;grid-template-columns:104px 1fr;gap:10px;border:1px solid var(--line);border-radius:12px;padding:9px;margin-top:9px;background:var(--bg)}
+.ref.off{opacity:.55}
+.ref img{width:104px;height:104px;object-fit:cover;border-radius:8px;display:block}
+.ref .top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px;font-size:12.5px}
+.badge{background:var(--acc);color:#fff;border-radius:6px;padding:1px 8px;font-weight:600;font-size:12px}
+.badge.mute{background:var(--line);color:var(--mute)}
+.ref .chip{font-size:12px;padding:3px 9px}
+.ref input[type=text]{margin-top:6px;font-size:13px;padding:6px 8px}
+.x{border:none;background:none;color:var(--mute);cursor:pointer;font-size:16px}
+.tog{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:4px;cursor:pointer}
+.su{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 6%,var(--card))}
+.su .bar{margin:4px 0 8px}
+.su label.tog{font-size:12.5px;color:var(--ink)}
+#suStatus{font-size:12px;color:var(--mute);margin:2px 0 10px;word-break:break-all}
+.mbar{display:none}
+@media (max-width:900px){
+  .out{position:static}
+  body{padding-bottom:84px}
+  .mbar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:8px;z-index:50}
+  .mbar .btn{flex:1;padding:13px 10px;font-size:14.5px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+  .mbar .btn.ghost{background:var(--card)}
+}
+header{padding-top:calc(22px + env(safe-area-inset-top,0px))}
+</style>
+</head>
+<body>
+<header>
+  <h1>Render Prompt <span>Studio</span></h1>
+  <p>สร้าง prompt เรนเดอร์ภาพสถาปัตยกรรมให้สมจริง ใช้ได้ทั้งงานภายนอก ภายใน ต่อเติมจากภาพปัจจุบัน เปลี่ยนภาพจริงหรือ sketch / SketchUp เป็นภาพเรนเดอร์ เลือกตัวเลือกแล้ว prompt จะสร้างให้ทันที คัดลอกไปใช้ได้เลย</p>
+</header>
+
+<div class="wrap">
+<main>
+  <section class="card su hidden" id="suCard">
+    <h2><span class="n">S</span><span id="suHost">SketchUp</span></h2>
+    <div class="bar">
+      <button class="btn" id="suSrc">แคปมุมมองเป็นภาพต้นฉบับ</button>
+      <button class="btn ghost" id="suRef">แคปเป็นรูป Reference</button>
+      <button class="btn ghost" id="suInfo">ดึงวัสดุ/ขนาดจากโมเดล</button>
+    </div>
+    <div class="bar" style="align-items:center">
+      <label class="tog"><input type="checkbox" id="suEdges" checked> <span id="lblEdges">ซ่อนเส้นขอบตอนแคป</span></label>
+      <label class="tog" id="suShadowWrap"><input type="checkbox" id="suShadow" checked> เปิดเงาตอนแคป</label>
+      <select id="suW" style="width:auto;padding:4px 8px;font-size:13px"><option value="1600">1600 px</option><option value="1920" selected>1920 px</option><option value="2560">2560 px</option><option value="3840">3840 px</option></select>
+    </div>
+    <div class="bar">
+      <button class="btn ghost" id="suFolder">เปิดโฟลเดอร์ภาพ</button>
+      <button class="btn ghost" id="suSave">บันทึก Prompt เป็นไฟล์ .txt</button>
+    </div>
+    <div id="suStatus">ภาพที่แคปจะบันทึกไว้ในโฟลเดอร์เดียวกับไฟล์โมเดลที่เปิดอยู่ นำไฟล์นั้นไปแนบใน AI ได้เลย</div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">1</span>ประเภทงาน</h2>
+    <div class="modes" id="modes"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span>โปรแกรม AI ที่จะใช้</h2>
+    <div class="chips" id="engine"></div>
+    <div class="tip" id="engineTip"></div>
+    <div class="field" style="margin-top:12px" id="refWrap">
+      <label>ภาพต้นฉบับ (ไว้ดูประกอบ ไม่ได้อัปโหลดไปที่ไหน)</label>
+      <div class="drop" id="drop">แตะเพื่อเลือกภาพ หรือลากภาพมาวาง
+        <input type="file" id="file" accept="image/*" hidden>
+        <img id="prev" class="hidden" alt="ภาพอ้างอิง">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">R</span>รูป Reference</h2>
+    <div class="tabs" id="refTabs">
+      <button class="chip" data-rt="ext">Reference ภายนอก</button>
+      <button class="chip" data-rt="int">Reference ภายใน</button>
+    </div>
+    <div class="drop" id="refDrop">แตะเพื่อเพิ่มรูป Reference (เลือกได้หลายรูป) หรือลากรูปมาวาง
+      <input type="file" id="refFile" accept="image/*" multiple hidden>
+    </div>
+    <div id="refList"></div>
+    <div class="field" style="margin-top:12px">
+      <label>น้ำหนักของ Reference</label>
+      <input type="range" id="refW" min="1" max="3" value="2" step="1">
+      <div class="rangeLbl"><span>แค่แรงบันดาลใจ</span><span>ชัดเจน</span><span>ตามรูป Ref ให้มากที่สุด</span></div>
+    </div>
+    <div class="tip" id="refTip"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span>อาคารและพื้นที่</h2>
+    <div id="drawFields">
+      <div class="field"><label>ภาพต้นฉบับของแบบ</label><div class="chips" data-g="dsrc" data-single></div></div>
+      <div class="field"><label>ชนิดแบบ</label><div class="chips" data-g="dtype" data-single></div></div>
+      <div class="field"><label>เฟอร์นิเจอร์และพร็อพ</label><div class="chips" data-g="fur"></div></div>
+      <div class="field"><label>ลักษณะภาพ</label><div class="chips" data-g="dstyle" data-single></div></div>
+      <div class="field"><label>การนำเสนอ</label><div class="chips" data-g="dopt"></div></div>
+    </div>
+    <div id="siteFields">
+      <div class="field"><label>ภาพต้นฉบับของผัง</label><div class="chips" data-g="spsrc" data-single></div></div>
+      <div class="field"><label>ประเภทโครงการ</label><div class="chips" data-g="proj" data-single></div></div>
+      <div class="field"><label>มุมมองผัง</label><div class="chips" data-g="view" data-single></div></div>
+      <div class="field"><label>องค์ประกอบในผัง</label><div class="chips" data-g="sitel"></div></div>
+      <div class="field"><label>การนำเสนอ</label><div class="chips" data-g="spopt"></div></div>
+    </div>
+    <div class="field" id="bldgField"><label>ประเภทอาคาร</label><div class="chips" data-g="bldg" data-single></div></div>
+    <div class="field" id="roomField"><label>ห้อง (สำหรับงานภายใน)</label><div class="chips" data-g="room" data-single></div></div>
+    <div class="field" id="renoField"><label>สิ่งที่จะต่อเติม/ปรับปรุง</label><div class="chips" data-g="reno"></div></div>
+    <div class="field"><label>รายละเอียดเพิ่มเติม (พิมพ์ไทยได้ แต่ AI ส่วนใหญ่เข้าใจภาษาอังกฤษดีกว่า)</label>
+      <textarea id="note" placeholder="เช่น 2-storey house, add carport on the left side, 6 x 5 m steel structure, keep the existing gate"></textarea></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">4</span>สไตล์และวัสดุ</h2>
+    <div class="field"><label>สไตล์</label><div class="chips" data-g="style" data-single></div></div>
+    <div class="field"><label>วัสดุหลัก</label><div class="chips" data-g="mat"></div></div>
+    <div class="field"><label>ระบบพรีคาสท์ / ชิ้นส่วนสำเร็จรูป</label><div class="chips" data-g="pre"></div></div>
+    <div class="field"><label>โทนสี</label><div class="chips" data-g="color" data-single></div></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">5</span>บรรยากาศ แสง และกล้อง</h2>
+    <div class="field"><label>ช่วงเวลา / แสง</label><div class="chips" data-g="light" data-single></div></div>
+    <div class="field"><label>สภาพอากาศ / บริบท</label><div class="chips" data-g="ctx"></div></div>
+    <div class="field" id="landField"><label>ภูมิทัศน์ / องค์ประกอบ</label><div class="chips" data-g="land"></div></div>
+    <div class="field" id="interField"><label>รายละเอียดภายใน</label><div class="chips" data-g="inter"></div></div>
+    <div class="field" id="camField"><label>มุมกล้อง / เลนส์</label><div class="chips" data-g="cam" data-single></div></div>
+    <div class="row2">
+      <div class="field"><label>สัดส่วนภาพ</label>
+        <select id="ar"><option>16:9</option><option>3:2</option><option>4:3</option><option>1:1</option><option>4:5</option><option>9:16</option><option>2:3</option></select></div>
+      <div class="field"><label>ความละเอียด / คุณภาพ</label>
+        <select id="res"><option value="8k">8K ultra detailed</option><option value="4k" selected>4K high detail</option><option value="hd">HD (เร็ว)</option></select></div>
+    </div>
+    <div class="field" id="keepField">
+      <label>ระดับการรักษารูปทรงเดิม</label>
+      <input type="range" id="keep" min="1" max="3" value="3" step="1">
+      <div class="rangeLbl"><span>ปรับได้อิสระ</span><span>สมดุล</span><span id="keepMax">ล็อกรูปทรงเดิม 100%</span></div>
+    </div>
+  </section>
+</main>
+
+<aside class="out">
+  <div class="outbox">
+    <h3>Prompt หลัก <span class="count" id="cnt"></span></h3>
+    <pre id="pMain"></pre>
+    <div class="bar">
+      <button class="btn" data-copy="pMain">คัดลอก Prompt</button>
+      <button class="btn ghost" id="shuffle">สุ่มรูปแบบใหม่</button>
+    </div>
+    <div id="negWrap">
+      <h3>Negative prompt</h3>
+      <pre id="pNeg"></pre>
+      <div class="bar"><button class="btn" data-copy="pNeg">คัดลอก Negative</button></div>
+    </div>
+    <h3>คำอธิบายภาษาไทย</h3>
+    <pre id="pTh" style="font-family:inherit"></pre>
+    <div class="bar"><button class="btn ghost" data-copy="pTh">คัดลอกคำอธิบาย</button></div>
+  </div>
+  <div class="outbox">
+    <h3>ค่าตั้งที่บันทึกไว้</h3>
+    <div class="row2">
+      <input type="text" id="presetName" placeholder="ชื่อชุดค่า เช่น บ้านโมเดิร์นเย็น">
+      <button class="btn ok" id="savePreset">บันทึก</button>
+    </div>
+    <div class="chips" id="presets" style="margin-top:10px"></div>
+    <div class="bar" style="margin-top:10px"><button class="btn ghost" id="reset">ล้างค่าทั้งหมด</button></div>
+  </div>
+</aside>
+</div>
+
+<div class="mbar" id="mbar"><button class="btn ghost" id="mGo">ดู Prompt ↓</button><button class="btn" id="mCopy">คัดลอก Prompt</button></div>
+<script>
+/* ---------- DATA ---------- */
+const MODES = {
+  exterior:{th:"ภายนอก (อาคารใหม่)",d:"ภาพมุมมองภายนอกอาคารที่ออกแบบใหม่",in:false,src:null},
+  interior:{th:"ภายใน",d:"ตกแต่งภายใน ห้องต่าง ๆ",in:true,src:null},
+  reno:{th:"ต่อเติม / ปรับปรุง",d:"จากภาพปัจจุบันเป็นภาพหลังออกแบบ",in:null,src:"photo"},
+  photo:{th:"ภาพจริงให้สวยขึ้น",d:"ภาพถ่ายจริงให้เหมือนภาพโฆษณา",in:null,src:"photo"},
+  sketch:{th:"Sketch เป็นภาพจริง",d:"ภาพวาดมือ/ลายเส้นเป็นภาพเรนเดอร์",in:null,src:"sketch"},
+  model:{th:"SketchUp/Revit เป็นภาพจริง",d:"ภาพแคปโมเดล 3D ให้เป็นภาพเหมือนจริง",in:null,src:"model"},
+  siteplan:{th:"ผังโครงการ",d:"ผัง 2D/CAD เป็นภาพผังมุมสูงเสมือนจริง",in:false,src:"plan"},
+  drawing:{th:"แปลน รูปด้าน รูปตัด Isometric",d:"แบบเป็นภาพเสมือนจริง พร้อมเฟอร์นิเจอร์และพร็อพ",in:null,src:"cad"}
+};
+const ENGINES = {
+  nano:{th:"Nano Banana / Gemini",tip:"<b>Gemini (Nano Banana)</b> แนบภาพต้นฉบับแล้ววาง prompt ได้เลย เหมาะกับงานต่อเติม ปรับปรุง และ sketch เพราะรักษารูปทรงเดิมได้ดี",edit:true},
+  gpt:{th:"ChatGPT Image",tip:"<b>ChatGPT</b> แนบภาพแล้ววาง prompt ได้เลย ถ้าผลยังเพี้ยน ให้พิมพ์ต่อในแชทเดิมว่า “keep everything else unchanged”",edit:true},
+  flux:{th:"Flux Kontext",tip:"<b>Flux Kontext</b> เหมาะกับการแก้ภาพ ใช้คำสั่งสั้นและชัด ระบุว่าส่วนไหนต้องคงไว้",edit:true},
+  mj:{th:"Midjourney",tip:"<b>Midjourney v7</b> ถ้ามีภาพต้นฉบับ ให้ใส่ URL ภาพไว้หน้า prompt หรือใช้ Image Prompt / Omni Reference ส่วน --iw ใช้คุมน้ำหนักภาพอ้างอิง",edit:false},
+  sd:{th:"Stable Diffusion / ControlNet",tip:"<b>SD / SDXL + ControlNet</b> ถ้าเป็น sketch ให้ใช้ ControlNet แบบ Lineart/Canny ถ้าเป็นภาพจริงหรือโมเดล ให้ใช้ Depth/MLSD แล้วตั้ง Denoise ตามระดับรักษารูปทรง",edit:false},
+  krea:{th:"Krea / LookX / D5 AI",tip:"<b>Krea / LookX / AI ใน D5</b> แนบภาพเป็น input แล้ววาง prompt หลักได้เลย ตั้ง strength ประมาณ 0.35–0.5 เพื่อให้รูปทรงยังเหมือนเดิม",edit:false}
+};
+// [key, thai, english]
+const G = {
+  bldg:[["house","บ้านเดี่ยว","single-family house"],["twohouse","บ้าน 2 ชั้น","two-storey house"],["town","ทาวน์โฮม","townhouse"],["shop","อาคารพาณิชย์","shophouse"],["office","สำนักงาน","office building"],["resto","ร้านอาหาร/คาเฟ่","restaurant and cafe"],["resort","รีสอร์ท","tropical resort"],["condo","คอนโด","condominium"],["factory","โรงงาน","industrial factory"],["wh","คลังสินค้า","warehouse"],["school","สถานศึกษา","school building"],["hall","อาคารจัดเลี้ยง","banquet and seminar hall"],["temple","ศาสนสถาน","Thai temple pavilion"]],
+  room:[["living","ห้องนั่งเล่น","living room"],["bed","ห้องนอน","master bedroom"],["kitchen","ห้องครัว","kitchen with island"],["dining","ห้องอาหาร","dining room"],["bath","ห้องน้ำ","bathroom"],["office","ห้องทำงาน","home office"],["lobby","ล็อบบี้","lobby"],["meeting","ห้องประชุม","meeting room"],["cafe","ร้านกาแฟ","cafe interior"],["shop","ร้านค้า","retail store"],["hall","ห้องจัดเลี้ยง","banquet hall"]],
+  reno:[["carport","โรงจอดรถ","a new carport"],["kitchenx","ครัวหลังบ้าน","a rear kitchen extension"],["room","ต่อห้องเพิ่ม","a new room extension"],["floor","เพิ่มชั้น","an additional storey"],["facade","ปรับหน้าตาอาคาร","a renovated facade"],["roof","เปลี่ยนหลังคา","a new roof"],["terrace","ระเบียง/ชาน","a new wooden deck terrace"],["fence","รั้วและประตู","a new fence and gate"],["paint","ทาสีใหม่","fresh exterior paint"],["window","เปลี่ยนประตูหน้าต่าง","new aluminium windows and doors"],["garden","จัดสวน","new landscaping"],["shopfront","หน้าร้าน","a new shopfront with signage"],["pool","สระว่ายน้ำ","a swimming pool"]],
+  style:[["modern","โมเดิร์น","modern minimalist"],["tropical","ทรอปิคอล","modern tropical"],["muji","มินิมอล / Muji","Japanese Muji minimalist"],["loft","ลอฟท์","industrial loft"],["nordic","นอร์ดิก","Scandinavian Nordic"],["luxury","ลักชัวรี","contemporary luxury"],["thai","ไทยร่วมสมัย","contemporary Thai"],["japandi","Japandi","Japandi"],["classic","คลาสสิก","neoclassical"],["wabi","Wabi-sabi","wabi-sabi"],["brutal","Brutalist","brutalist"],["colonial","โคโลเนียล","colonial"]],
+  mat:[["concrete","ปูนเปลือย","exposed concrete"],["wood","ไม้","natural teak wood"],["woodslat","ระแนงไม้","vertical wood slats"],["glass","กระจก","large glass panels"],["steel","เหล็กสีดำ","black steel"],["brick","อิฐโชว์แนว","exposed red brick"],["stone","หิน","natural stone cladding"],["white","ฉาบเรียบสีขาว","smooth white plaster"],["metal","เมทัลชีท","standing-seam metal roof"],["tile","กระเบื้องลอน","clay roof tiles"],["terrazzo","Terrazzo","terrazzo"],["marble","หินอ่อน","marble"],["rattan","หวาย/จักสาน","rattan and woven textures"],["alu","อลูมิเนียม","aluminium frames"],["louver","ระแนงอลูมิเนียม","aluminium louvers"],["fiber","ไม้เทียมไฟเบอร์ซีเมนต์","fiber cement wood-look siding"],["breeze","บล็อกช่องลม","decorative concrete breeze blocks"],["perforated","แผ่นเหล็กเจาะรู","perforated metal screen"],["polished","พื้นขัดมัน","polished concrete floor"],["spc","พื้นไม้ SPC/ลามิเนต","oak-look SPC flooring"],["porcelain","กระเบื้องแผ่นใหญ่","large-format porcelain tiles"],["washed","ทรายล้าง/กรวดล้าง","exposed aggregate washed gravel finish"]],
+  pre:[["pcwall","ผนังพรีคาสท์เรียบ","smooth precast concrete wall panels with crisp, evenly spaced joint lines"],["pctex","ผนังพรีคาสท์ผิวลาย","textured precast concrete facade panels with board-formed pattern"],["pcpaint","พรีคาสท์ทาสี","painted precast concrete wall panels, seamless matte finish"],["pcfin","ครีบ/แผงบังแดดพรีคาสท์","precast concrete vertical fins and sun-shading panels"],["hollow","พื้น Hollow core","precast hollow-core slab floors"],["plank","พื้นสำเร็จรูป Plank","precast plank floor slabs"],["pcstair","บันไดพรีคาสท์","precast concrete staircase"],["pcfence","รั้วพรีคาสท์","precast concrete fence panels with clean modular joints"],["pccol","เสา-คานพรีคาสท์","exposed precast concrete columns and beams"],["gfrc","แผ่น GFRC","GFRC facade panels"]],
+  color:[["warm","โทนอบอุ่น","warm earthy tones"],["white","ขาว-เทา","white and grey palette"],["dark","เข้ม-ดำ","dark moody palette"],["natural","ธรรมชาติ","natural beige and wood tones"],["pastel","พาสเทล","soft pastel tones"],["contrast","คอนทราสต์","high-contrast monochrome"]],
+  light:[["day","กลางวันแดดใส","bright midday sunlight, clear blue sky, crisp soft shadows"],["morning","เช้า","soft morning sunlight, gentle warm light"],["golden","Golden hour","golden hour sunset light, long warm shadows"],["blue","Blue hour","blue hour dusk, warm interior lights glowing, deep blue sky"],["night","กลางคืน","night scene, warm architectural lighting, illuminated facade"],["overcast","ฟ้าครึ้ม","overcast diffused daylight, soft even lighting"],["indoorday","แสงธรรมชาติภายใน","natural daylight through large windows, soft bounced light"],["indoorwarm","ไฟภายในอบอุ่น","warm cozy interior lighting, 3000K, layered ambient and accent lights"]],
+  ctx:[["rain","หลังฝนตก","after rain, wet reflective ground"],["mist","หมอกเบา","light morning mist"],["urban","ในเมือง","urban street context"],["suburb","หมู่บ้าน","suburban Thai village context"],["rural","ชนบท/ทุ่งนา","rural Thai countryside with rice fields"],["sea","ริมทะเล","seaside context"],["mountain","ภูเขา","mountain backdrop"],["river","ริมน้ำ","riverside setting"]],
+  land:[["trees","ต้นไม้ใหญ่","mature shade trees"],["tropicalp","พืชทรอปิคอล","lush tropical plants"],["lawn","สนามหญ้า","manicured green lawn"],["water","บ่อน้ำ/สระ","reflecting pool"],["paving","ลานหิน","stone paving"],["people","มีคน","a few people for scale"],["car","มีรถจอด","a modern car parked"],["clean","ฉากโล่ง สะอาด","clean uncluttered scene"]],
+  inter:[["furn","เฟอร์นิเจอร์ครบ","fully furnished with designer furniture"],["plants","ต้นไม้ในบ้าน","indoor plants"],["art","งานศิลปะ","curated artwork"],["rug","พรม","textured area rug"],["builtin","บิวท์อิน","custom built-in cabinetry"],["cove","ไฟซ่อนฝ้า","concealed cove lighting"],["pendant","โคมไฟห้อย","designer pendant lights"],["view","วิวนอกหน้าต่าง","garden view through windows"],["styled","จัดพร็อพ","lifestyle styling, styled props"]],
+  spsrc:[["plan","ผัง 2D / CAD","plan"],["drone","ภาพโดรน/ดาวเทียมที่ดินจริง","drone"],["model","โมเดลผัง SketchUp","model"],["none","ไม่มีภาพ (จากคำบรรยาย)","none"]],
+  proj:[["estate","หมู่บ้านจัดสรร","residential housing estate of detached houses"],["townh","ทาวน์โฮม","townhouse community"],["condo","คอนโด/มิกซ์ยูส","condominium and mixed-use development"],["resort","รีสอร์ท","tropical resort with pool villas"],["single","บ้านในที่ดิน","single house on its own landscaped plot"],["garden","ร้านอาหาร/คาเฟ่ในสวน","garden restaurant and cafe compound"],["factory","โรงงาน/นิคม","industrial estate with factories and warehouses"],["logis","คลังสินค้า/โลจิสติกส์","logistics park with warehouses and truck yards"],["mall","คอมมูนิตี้มอลล์","community mall with open plaza"],["school","โรงเรียน/มหาวิทยาลัย","school campus"],["hospital","โรงพยาบาล","hospital campus"],["temple","วัด/ศาสนสถาน","Thai temple compound"],["park","สวนสาธารณะ","public park"]],
+  view:[["top","ผังตรง 90°","straight top-down orthographic plan view, 90 degree overhead, north up"],["aerial45","มุมนก 45°","bird's-eye aerial view at 45 degrees"],["low30","โดรนต่ำ 30°","low drone aerial view at 30 degrees, building facades visible"],["axo","Axonometric","isometric axonometric aerial view"]],
+  sitel:[["roads","ถนน/เส้นจราจร","asphalt roads with lane markings and curbs"],["roofs","หลังคาอาคารละเอียด","detailed building roofs"],["trees","ต้นไม้แนวถนน","street trees along every road"],["park","สวนส่วนกลาง","central park with lawns and walking paths"],["lake","บึง/ทะเลสาบ","landscaped lake with natural edges"],["club","คลับเฮาส์+สระ","clubhouse with swimming pool"],["parking","ลานจอดรถมีรถ","parking lots with parked cars"],["sports","สนามกีฬา","sports courts"],["play","สนามเด็กเล่น","children's playground"],["solar","โซลาร์บนหลังคา","solar panels on roofs"],["gate","รั้วรอบ+ป้อมทางเข้า","perimeter wall and guarded entrance gate"],["life","คน/รถสัญจร","people walking and cars driving for life"],["context","บริบทรอบโครงการ","surrounding neighbourhood context"]],
+  spopt:[["clean","ลบตัวหนังสือ/เส้นมิติ","remove all text, labels, dimensions and annotations of the drawing"],["shadow","เงาชัดสมจริง","crisp realistic shadows from buildings and trees"],["boundary","เส้นขอบเขตที่ดิน","subtle white dashed site boundary line"],["fade","ขอบภาพจางขาว","surroundings fading softly to white at the edges, presentation style"],["green","เขียวชอุ่ม","lush green landscape, healthy vegetation"],["dusk","ไฟถนนยามค่ำ","street lights and building lights glowing at dusk"]],
+  dsrc:[["cad","แบบ CAD / PDF","cad"],["dsketch","Sketch มือ","dsketch"],["model","แคปจาก SketchUp/Revit","model"],["none","ไม่มีแบบ (จากคำบรรยาย)","none"]],
+  dtype:[["plan","แปลนพื้น","rendered floor plan, straight top-down orthographic view, walls cut at 1.2 m height"],["elev","รูปด้าน","rendered elevation, flat orthographic front view without perspective"],["sect","รูปตัด","rendered building section, orthographic cut through the building showing interior spaces"],["secp","รูปตัดเปอร์สเปคทีฟ","section perspective, building cut open with one-point perspective into the interior spaces"],["iso","Isometric ตัดหลังคา","isometric cutaway 3D floor plan, roof removed, walls cut at 1.2 m, 30 degree isometric"],["isofull","Isometric ทั้งหลัง","isometric view of the whole building with roof and site"],["explode","Isometric แยกชั้น","exploded isometric view with each floor separated vertically"]],
+  fur:[["living","ชุดโซฟา/ห้องนั่งเล่น","sofa set with coffee table and TV console"],["dining","โต๊ะอาหาร","dining table with chairs"],["bed","เตียงพร้อมผ้าปู","beds with linens, pillows and bedside tables"],["kitchen","ครัวและเครื่องใช้","kitchen counters with sink, hob, fridge and utensils"],["wardrobe","ตู้เสื้อผ้า/บิวท์อิน","wardrobes and built-in cabinets"],["bath","สุขภัณฑ์ห้องน้ำ","bathroom fixtures: toilet, basin, shower with glass screen"],["office","โต๊ะทำงาน","desks, office chairs and shelves"],["rug","พรม","area rugs"],["plants","ต้นไม้ในบ้าน","indoor potted plants"],["lamp","โคมไฟ","floor and table lamps"],["decor","พร็อพแต่งบ้าน","decor props: books, vases, artwork, cushions, throws"],["people","คน (สเกล)","a few people for scale"],["car","รถในโรงจอด","cars parked in the carport"],["outdoor","เฟอร์นิเจอร์นอกบ้าน","outdoor furniture on terrace and garden"],["landsc","ต้นไม้/สนามรอบบ้าน","trees, lawn and planting around the building"],["shop","ชั้นวางสินค้า/เคาน์เตอร์","shop shelving and service counter"],["table","โต๊ะร้านอาหาร","restaurant tables and chairs"]],
+  dstyle:[["photo","เสมือนจริงเต็มรูปแบบ","fully photorealistic materials and lighting"],["mag","สไตล์นิตยสาร โทนนุ่ม","soft magazine-style presentation, muted natural tones"],["white","โมเดลขาว+เงา","clean white model style with realistic soft shadows, color only on furniture and plants"],["night","กลางคืนเปิดไฟ","night scene with warm interior lights glowing"]],
+  dopt:[["clean","ลบตัวหนังสือ/เส้นมิติ","remove all text, dimensions, grid lines and annotations"],["labels","คงชื่อห้อง","keep clean minimal room name labels"],["poche","ผนังตัดสีดำ (poché)","cut walls and slabs shown as solid dark poché"],["shadow","เงาเฟอร์นิเจอร์","soft realistic shadows under furniture"],["ground","แสดงดินและฐานราก","ground line with soil, footings and piles shown in section"],["sky","ท้องฟ้า/ต้นไม้ฉากหลัง","sky and trees in the background"],["whitebg","พื้นหลังขาว","clean white background"]],
+  cam:[["eye","ระดับสายตา","eye-level perspective, 24mm lens"],["wide","มุมกว้าง","wide-angle shot, 16mm lens"],["corner","มุมเฉียง 3/4","three-quarter corner view, 28mm lens"],["front","ตรงด้านหน้า","straight-on frontal elevation view, 35mm lens"],["aerial","มุมสูง/โดรน","aerial drone view, 45 degree angle"],["low","มุมต่ำ","low-angle hero shot"],["detail","ภาพรายละเอียด","close-up detail shot, 85mm lens, shallow depth of field"],["tilt","Tilt-shift ตรง","tilt-shift lens, perfectly vertical lines"]]
+};
+const DEFAULT = {mode:"exterior",engine:"nano",bldg:["twohouse"],room:["living"],reno:[],style:["tropical"],mat:["white","wood"],pre:[],color:["natural"],light:["day"],ctx:["suburb"],land:["trees","lawn"],inter:["furn","plants"],cam:["corner"],spsrc:["plan"],proj:["estate"],view:["aerial45"],sitel:["roads","roofs","trees","park"],spopt:["clean","shadow"],dsrc:["cad"],dtype:["plan"],fur:["living","dining","bed","kitchen","bath","rug","plants","decor"],dstyle:["photo"],dopt:["clean","poche","shadow"],refW:2,refTab:"ext",ar:"16:9",res:"4k",keep:3,note:""};
+let S = JSON.parse(JSON.stringify(DEFAULT));
+function srcOf(){ if(S.mode==="drawing"){const d=(S.dsrc&&S.dsrc[0])||"cad";return d==="none"?null:d;} if(S.mode!=="siteplan") return MODES[S.mode].src; const s=(S.spsrc&&S.spsrc[0])||"plan"; return s==="none"?null:s; }
+let variant = 0;
+
+/* ---------- STORAGE ---------- */
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const saved = store.get("rps_state",null); if(saved) S = Object.assign(S,saved); for(const k in DEFAULT) if(S[k]===undefined) S[k]=JSON.parse(JSON.stringify(DEFAULT[k]));
+
+/* ---------- UI BUILD ---------- */
+const $ = id=>document.getElementById(id);
+function buildModes(){
+  $("modes").innerHTML = Object.entries(MODES).map(([k,m])=>`<button class="mode ${S.mode===k?'on':''}" data-m="${k}"><b>${m.th}</b><small>${m.d}</small></button>`).join("");
+  $("modes").querySelectorAll(".mode").forEach(b=>b.onclick=()=>{S.mode=b.dataset.m;S.refTab=isInterior()?"int":"ext";buildModes();renderRefs();update()});
+}
+function buildEngines(){
+  $("engine").innerHTML = Object.entries(ENGINES).map(([k,e])=>`<button class="chip ${S.engine===k?'on':''}" data-e="${k}">${e.th}</button>`).join("");
+  $("engine").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{S.engine=b.dataset.e;buildEngines();update()});
+  $("engineTip").innerHTML = ENGINES[S.engine].tip;
+}
+function buildChips(){
+  document.querySelectorAll("[data-g]").forEach(box=>{
+    const g=box.dataset.g, single=box.hasAttribute("data-single");
+    box.innerHTML = G[g].map(([k,th])=>`<button class="chip ${S[g].includes(k)?'on':''}" data-k="${k}">${th}</button>`).join("");
+    box.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k;
+      if(single) S[g] = S[g][0]===k?[]:[k];
+      else S[g] = S[g].includes(k)?S[g].filter(x=>x!==k):[...S[g],k];
+      buildChips();update();
+    });
+  });
+}
+function syncInputs(){ $("note").value=S.note; $("ar").value=S.ar; $("res").value=S.res; $("keep").value=S.keep; $("refW").value=S.refW; }
+$("note").oninput=e=>{S.note=e.target.value;update()};
+$("ar").onchange=e=>{S.ar=e.target.value;update()};
+$("res").onchange=e=>{S.res=e.target.value;update()};
+$("keep").oninput=e=>{S.keep=+e.target.value;update()};
+$("refW").oninput=e=>{S.refW=+e.target.value;update()};
+
+/* image preview */
+const drop=$("drop"), file=$("file");
+drop.onclick=()=>file.click();
+drop.ondragover=e=>{e.preventDefault()};
+drop.ondrop=e=>{e.preventDefault(); if(e.dataTransfer.files[0]) showImg(e.dataTransfer.files[0])};
+file.onchange=()=>file.files[0]&&showImg(file.files[0]);
+function showImg(f){const u=URL.createObjectURL(f);$("prev").src=u;$("prev").classList.remove("hidden")}
+
+/* ---------- REFERENCE IMAGES ---------- */
+const ASP=[["style","สไตล์โดยรวม","overall design style"],["mat","วัสดุ/พื้นผิว","materials and surface textures"],["color","โทนสี","color palette"],["light","แสง/บรรยากาศ","lighting and mood"],["land","ภูมิทัศน์/ต้นไม้","landscaping and planting"],["furn","เฟอร์นิเจอร์/ของแต่ง","furniture and decor"],["facade","รูปแบบ Facade/ช่องเปิด","facade composition and window pattern"],["comp","มุมกล้อง/องค์ประกอบ","camera angle and composition"]];
+let REFS=[];
+const DB={db:null,
+  open(){return new Promise(r=>{try{const q=indexedDB.open("rps",1);q.onupgradeneeded=()=>q.result.createObjectStore("refs",{keyPath:"id"});q.onsuccess=()=>{this.db=q.result;r()};q.onerror=()=>r()}catch(e){r()}})},
+  all(){return new Promise(r=>{try{const t=this.db.transaction("refs").objectStore("refs").getAll();t.onsuccess=()=>r(t.result||[]);t.onerror=()=>r([])}catch(e){r([])}})},
+  put(o){try{this.db&&this.db.transaction("refs","readwrite").objectStore("refs").put(o)}catch(e){}},
+  del(id){try{this.db&&this.db.transaction("refs","readwrite").objectStore("refs").delete(id)}catch(e){}}
+};
+function shrink(f){return shrinkSrc(URL.createObjectURL(f))}
+function shrinkSrc(src){return new Promise(res=>{const img=new Image();img.onload=()=>{const k=Math.min(1,640/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.82))};img.onerror=()=>res(null);img.src=src})}
+function pushRef(d){
+    const o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),tab:S.refTab,data:d,asp:S.refTab==="int"?["style","mat","furn"]:["style","mat","color"],note:"",on:true,t:Date.now()};
+    REFS.push(o); DB.put(o);
+}
+async function addRefs(files){
+  for(const f of files){ if(!f.type.startsWith("image/")) continue; const d=await shrink(f); if(d) pushRef(d); }
+  renderRefs(); update();
+}
+const activeRefs=()=>REFS.filter(r=>r.tab===(isInterior()?"int":"ext")&&r.on);
+const rd=$("refDrop"), rf=$("refFile");
+rd.onclick=e=>{if(e.target===rd) rf.click()};
+rd.ondragover=e=>e.preventDefault();
+rd.ondrop=e=>{e.preventDefault();addRefs([...e.dataTransfer.files])};
+rf.onchange=()=>{addRefs([...rf.files]);rf.value=""};
+function renderRefs(){
+  $("refTabs").querySelectorAll("[data-rt]").forEach(b=>{b.classList.toggle("on",b.dataset.rt===S.refTab);const n=REFS.filter(r=>r.tab===b.dataset.rt).length;b.textContent=(b.dataset.rt==="ext"?"Reference ภายนอก":"Reference ภายใน")+(n?` (${n})`:"");b.onclick=()=>{S.refTab=b.dataset.rt;renderRefs();update()}});
+  const act=activeRefs(), start=srcOf()?2:1;
+  const list=REFS.filter(r=>r.tab===S.refTab);
+  $("refList").innerHTML = list.length ? list.map(r=>{
+    const i=act.indexOf(r);
+    const badge = i>=0 ? `<span class="badge">ภาพที่ ${start+i}</span>` : `<span class="badge mute">${r.on?"ไม่ได้ใช้กับงาน"+(isInterior()?"ภายใน":"ภายนอก"):"ปิดอยู่"}</span>`;
+    return `<div class="ref ${r.on?"":"off"}" data-id="${r.id}"><img src="${r.data}" alt="Reference"><div>
+      <div class="top">${badge}<span style="display:flex;gap:8px;align-items:center"><label class="tog"><input type="checkbox" data-on ${r.on?"checked":""}>ใช้รูปนี้</label><button class="x" data-del title="ลบ">✕</button></span></div>
+      <div class="chips">${ASP.map(([k,t])=>`<button class="chip ${r.asp.includes(k)?"on":""}" data-a="${k}">${t}</button>`).join("")}</div>
+      <input type="text" data-note value="${r.note.replace(/"/g,"&quot;")}" placeholder="ระบุเพิ่ม เช่น only the wood slat screen, ignore the roof">
+    </div></div>`}).join("") : `<div style="color:var(--mute);font-size:12.5px;margin-top:8px">ยังไม่มีรูป Reference ${S.refTab==="ext"?"ภายนอก":"ภายใน"}</div>`;
+  $("refList").querySelectorAll(".ref").forEach(el=>{
+    const r=REFS.find(x=>x.id===el.dataset.id);
+    el.querySelectorAll("[data-a]").forEach(c=>c.onclick=()=>{const k=c.dataset.a;r.asp=r.asp.includes(k)?r.asp.filter(x=>x!==k):[...r.asp,k];DB.put(r);renderRefs();update()});
+    el.querySelector("[data-on]").onchange=e=>{r.on=e.target.checked;DB.put(r);renderRefs();update()};
+    el.querySelector("[data-del]").onclick=()=>{REFS=REFS.filter(x=>x!==r);DB.del(r.id);renderRefs();update()};
+    el.querySelector("[data-note]").oninput=e=>{r.note=e.target.value;DB.put(r);update()};
+  });
+  const m=MODES[S.mode];
+  $("refTip").innerHTML = `<b>ลำดับการแนบภาพเข้า AI:</b> ${m.src?"ภาพต้นฉบับเป็นภาพที่ 1 แล้วตามด้วย":"แนบ"}รูป Ref ตามหมายเลขบนการ์ด prompt จะอ้างถึงภาพตามหมายเลขนี้ แอปจะใช้เฉพาะ Ref ที่ตรงกับงาน (ภายนอกหรือภายใน) ส่วนรูปที่เพิ่มไว้จะเก็บอยู่ในเบราว์เซอร์เครื่องนี้`;
+}
+function refBlock(hasSrc,srcWord){
+  const a=activeRefs(); if(!a.length) return null;
+  const start=hasSrc?2:1;
+  const w=["","loosely, as subtle inspiration only","clearly","closely, matching them as faithfully as possible"][S.refW];
+  const lines=a.map((r,i)=>{const asp=r.asp.map(k=>ASP.find(x=>x[0]===k)?.[2]).filter(Boolean);
+    return `- Image ${start+i} (${r.tab==="int"?"interior":"exterior"} reference): take its ${asp.length?join(asp):"overall design style"}${r.note.trim()?` (${r.note.trim()})`:""}.`});
+  const copiesComp=a.some(r=>r.asp.includes("comp"));
+  const head = hasSrc ? `Image 1 is the base ${srcWord} to transform. Reference images:` : `Reference images (use them only as references, do not reproduce them):`;
+  const tail = `Follow the references ${w}. Do not copy the reference buildings' massing, layout or exact objects`+(hasSrc?"; all geometry must come from Image 1 only.":(copiesComp?" except the camera angle and composition requested.":"."));
+  return {text:[head,...lines,tail].join("\n"), n:a.length, start, list:a};
+}
+
+/* ---------- PROMPT LOGIC ---------- */
+const en = g => S[g].map(k=>G[g].find(x=>x[0]===k)?.[2]).filter(Boolean);
+const th = g => S[g].map(k=>G[g].find(x=>x[0]===k)?.[1]).filter(Boolean);
+const join = a => a.length<=1?(a[0]||""):a.slice(0,-1).join(", ")+" and "+a.at(-1);
+
+function isInterior(){ const m=MODES[S.mode]; if(m.in!==null) return m.in; return S.room.length>0 && S.bldg.length===0; }
+
+function build(){
+  const m=S.mode, eng=ENGINES[S.engine], inside=isInterior();
+  const style=en("style")[0]||"contemporary", mats=join([...en("mat"),...en("pre")]), col=en("color")[0];
+  const light=en("light")[0]||"", ctx=en("ctx"), cam=en("cam")[0]||"", bld=en("bldg")[0]||"building", room=en("room")[0]||"interior space";
+  const land=en("land"), inter=en("inter"), reno=en("reno");
+  const q = {
+    "8k":"photorealistic architectural photography, 8K ultra-detailed, razor-sharp focus, physically accurate materials and global illumination, Corona/V-Ray quality render",
+    "4k":"photorealistic architectural photography, 4K high detail, sharp focus, realistic materials and lighting, V-Ray quality render",
+    "hd":"photorealistic architectural render, sharp and clean"
+  }[S.res];
+  const photoLook = variant%3===0 ? "shot on a full-frame camera, professional architectural magazine photo, natural color grading"
+                   : variant%3===1 ? "Archdaily-style editorial photograph, balanced exposure, true-to-life colors"
+                   : "award-winning architectural visualization, cinematic yet realistic, subtle depth";
+  let keepTxt = {
+    3:"Strictly preserve the exact building geometry, proportions, structure, camera angle, perspective and framing of Image 1 (the original image). Do not move, add or remove walls, openings, columns or roof lines.",
+    2:"Keep the main massing, proportions and camera angle of Image 1 (the original image); refine details, materials and surroundings.",
+    1:"Use Image 1 (the original image) as a loose guide for composition; design details may be improved freely."
+  }[S.keep];
+  const subject = inside ? `${style} ${room}` : `${style} ${bld}`;
+  const matTxt = mats ? `materials: ${mats}` : "";
+  const colTxt = col ? col : "";
+  const envTxt = inside ? join(inter) : join([...land,...ctx]);
+  const noteTxt = S.note.trim();
+
+  let lead="", body=[], thai=[];
+  const srcWord = {photo:"photograph",sketch:"hand sketch / line drawing",model:S.mode==="siteplan"?"3D site model screenshot":"3D model screenshot",plan:"2D site plan / master plan drawing",cad:"architectural CAD drawing",dsketch:"hand-drawn architectural drawing",drone:"aerial drone / satellite photo of the existing site"}[srcOf()];
+
+  if(m==="exterior"||m==="interior"){
+    lead = inside ? `A photorealistic interior photograph of a ${subject}` : `A photorealistic exterior photograph of a ${subject}`;
+  } else if(m==="reno"){
+    lead = `Transform this ${srcWord} of the existing ${inside?room:bld} into a realistic after-renovation photo` + (reno.length?`, adding ${join(reno)}`:"") + `, redesigned in ${style} style`;
+  } else if(m==="photo"){
+    lead = `Enhance this ${srcWord} of a ${inside?room:bld} into a high-end, photorealistic ${style} architectural photo, cleaning up clutter, correcting colors and improving lighting`;
+  } else if(m==="sketch"){
+    lead = `Turn this ${srcWord} into a photorealistic ${inside?"interior":"exterior"} render of a ${subject}, interpreting every line as real built elements`;
+  } else if(m==="model"){
+    lead = `Convert this ${srcWord} into a photorealistic ${inside?"interior":"exterior"} photograph of a ${subject}, replacing flat model textures with real-world materials`;
+  }
+  body.push(lead);
+  if(matTxt) body.push(matTxt);
+  if(colTxt) body.push(colTxt);
+  if(envTxt) body.push(envTxt);
+  if(light) body.push(light);
+  if(cam && !(srcOf() && S.keep===3)) body.push(cam);
+  if(noteTxt) body.push(noteTxt);
+  body.push(q, photoLook, "straight vertical lines, correct perspective, realistic scale");
+  if(m==="drawing"){
+    const dk=(S.dtype[0])||"plan", dt=en("dtype")[0]||"rendered floor plan", fur=en("fur"), dopt=en("dopt"), dst=en("dstyle")[0]||"", sv=srcOf();
+    const subj = S.room.length && !S.bldg.length ? room : bld;
+    const ortho = ["plan","elev","sect"].includes(dk);
+    lead = sv ? `Transform this ${srcWord} into a photorealistic rendered drawing of a ${style} ${subj}: ${dt}. Turn every wall, door, window and furniture symbol into realistic 3D-looking elements with real materials`
+              : `A photorealistic rendered drawing of a ${style} ${subj}: ${dt}`;
+    body=[lead];
+    if(fur.length) body.push("fully furnished and styled with "+join(fur));
+    if(matTxt) body.push(matTxt);
+    if(colTxt) body.push(colTxt);
+    if(light && dk!=="plan") body.push(light);
+    if(dk==="plan") body.push("soft even daylight from above with gentle ambient occlusion");
+    if(dst) body.push(dst);
+    if(noteTxt) body.push(noteTxt);
+    body.push(...(sv?dopt:dopt.filter(x=>!x.startsWith("remove all text"))));
+    body.push("high-end architectural presentation drawing, ultra-detailed realistic textures on floors, walls and furniture, accurate furniture scale and clearances, crisp clean edges", ortho ? "true orthographic projection, no perspective distortion, perfectly straight and parallel lines" : (dk.startsWith("iso")||dk==="explode") ? "true isometric parallel projection, no vanishing points" : "correct one-point perspective");
+    keepTxt = {
+      3:"Strictly keep the exact wall layout, dimensions, door and window positions, room proportions and drawing scale of Image 1. Place furniture only inside the rooms without blocking doors; do not change the plan.",
+      2:"Keep the wall layout, openings and proportions of Image 1; furniture arrangement may be improved.",
+      1:"Use Image 1 as a layout guide; furniture and details may be designed freely."
+    }[S.keep];
+  }
+  if(m==="siteplan"){
+    const proj=en("proj")[0]||"mixed-use development", view=en("view")[0]||"bird's-eye aerial view", el=en("sitel"), opt=en("spopt"), sv=srcOf();
+    lead = sv==="plan" ? `Transform this ${srcWord} into a photorealistic aerial master plan render of a ${style} ${proj}, turning every drawn road, plot, building footprint, green area and water body into real built elements`
+         : sv==="drone" ? `Using this ${srcWord}, design and render a photorealistic ${style} ${proj} built on this exact site`
+         : sv==="model" ? `Convert this ${srcWord} into a photorealistic aerial master plan render of a ${style} ${proj}, replacing flat model colors with real materials`
+         : `A photorealistic aerial master plan render of a ${style} ${proj}`;
+    body=[lead, view];
+    if(el.length) body.push("including "+join(el));
+    if(matTxt) body.push(matTxt.replace("materials:","building materials:"));
+    if(colTxt) body.push(colTxt);
+    if(ctx.length) body.push(join(ctx));
+    if(light) body.push(light);
+    if(noteTxt) body.push(noteTxt);
+    body.push(...(sv==="plan"?opt:opt.filter(x=>!x.startsWith("remove all text"))));
+    body.push("ultra-detailed real drone photograph, realistic textures on roofs, asphalt, grass, trees and water, accurate scale of cars, trees and people, consistent sun direction, "+({"8k":"8K","4k":"4K","hd":"HD"})[S.res]+" sharp detail");
+    keepTxt = {
+      3:"Strictly preserve the exact layout of Image 1: road alignment, plot boundaries, building footprints, positions, orientation and scale. Do not add, remove or move any building, road or plot.",
+      2:"Keep the overall layout, road network and building positions of Image 1; refine landscaping, materials and details.",
+      1:"Use the layout of Image 1 as a guide; landscaping and details may be designed freely."
+    }[S.keep];
+    if(sv==="drone") keepTxt = "Keep the real surroundings, existing roads, terrain, camera angle and site boundary of Image 1 exactly as they are; only the area inside the site changes. " + (S.keep===1?"":"Fit the new project neatly inside the boundary at a realistic scale.");
+  }
+
+  let neg = "cartoon, CGI look, plastic textures, oversaturated, blurry, low resolution, noise, distorted perspective, warped or bent lines, extra floors, floating objects, duplicated windows, deformed people, watermark, text, logo, frame, oversharpened, HDR halo"
+    + (srcOf() && S.keep>=2 ? ", changed building shape, altered camera angle" : "")
+    + (m==="drawing" ? ", perspective distortion, furniture overlapping walls, furniture blocking doors, wrong furniture scale, messy lines, illegible text" : "")
+    + (m==="siteplan" ? ", misaligned roads, extra buildings, wrong scale, toy-like miniature look, tilt-shift blur, flat 2D drawing look, visible CAD lines, illegible text" : "");
+
+  let main="";
+  const hasSrc = !!srcOf();
+  const rb = refBlock(hasSrc, srcWord||"image");
+  if(eng.edit){
+    main = body.join(". ").replace(/\.\./g,".") + ".";
+    if(rb) main += "\n\n" + rb.text;
+    if(hasSrc) main += "\n\n" + keepTxt;
+    main += `\n\nAvoid: ${neg}.`;
+    main += `\nAspect ratio ${S.ar}.`;
+  } else if(S.engine==="mj"){
+    main = (hasSrc?"[ใส่ URL ภาพต้นฉบับ] ":"") + body.join(", ") + (rb?` --sref ${Array.from({length:rb.n},(_,i)=>`[URL Ref ${i+1}]`).join(" ")} --sw ${[0,80,200,400][S.refW]}`:"") + ` --ar ${S.ar} --style raw --v 7 --s 150` + (hasSrc?` --iw ${[0,1,1.5,2][S.keep]}`:"") + ` --no ${neg.split(", ").slice(0,10).join(", ")}`;
+  } else if(S.engine==="sd"){
+    main = "(masterpiece, best quality, photorealistic:1.2), " + body.join(", ");
+    if(hasSrc){
+      const cn = {sketch:"Lineart / Canny",photo:"Depth + MLSD",model:"Depth + Canny",plan:"Lineart + Seg (หรือ MLSD)",cad:"Lineart + MLSD",dsketch:"Scribble / Lineart",drone:"Depth + Canny"}[srcOf()];
+      const dn = {3:"0.35–0.45",2:"0.5–0.6",1:"0.65–0.75"}[S.keep];
+      main += "";
+      main += `\n\n[ตั้งค่าแนะนำ] ControlNet: ${cn} · weight ${S.keep===3?"0.9–1.0":"0.6–0.8"} · Denoise ${dn} · Steps 30 · CFG 6–7 · Sampler DPM++ 2M Karras`;
+    }
+    if(rb) main += `\n[Reference] IP-Adapter Plus ใส่รูป Ref ${rb.n} รูป · weight ${["","0.35","0.55","0.75"][S.refW]} · ถ้าต้องการแค่สไตล์/สี ให้ใช้โหมด style transfer`;
+  } else { // krea / lookx
+    main = body.join(", ");
+    if(rb) main += `\n\n[Reference] ใส่รูป Ref ${rb.n} รูปในช่อง Style/Image reference · influence ${["","25%","50%","75%"][S.refW]}`;
+    if(hasSrc) main += `\n\n[ตั้งค่าแนะนำ] Strength ${({3:"0.30–0.40",2:"0.45–0.55",1:"0.6–0.7"})[S.keep]} · Aspect ${S.ar}`;
+  }
+
+  // Thai explanation
+  const mt = MODES[m].th;
+  thai.push(`ประเภทงาน: ${mt}`);
+  if(m==="drawing"){
+    thai.push(`ภาพต้นฉบับ: ${th("dsrc").join(", ")||"-"} · ชนิดแบบ: ${th("dtype").join(", ")||"-"}`);
+    thai.push(`อาคาร/ห้อง: ${(S.bldg.length?th("bldg"):th("room")).join(", ")||"-"}`);
+    thai.push(`เฟอร์นิเจอร์/พร็อพ: ${th("fur").join(", ")||"-"}`);
+    thai.push(`ลักษณะภาพ: ${th("dstyle").join(", ")||"-"} · การนำเสนอ: ${th("dopt").join(", ")||"-"}`);
+  } else if(m==="siteplan"){
+    thai.push(`ภาพต้นฉบับ: ${th("spsrc").join(", ")||"-"} · โครงการ: ${th("proj").join(", ")||"-"}`);
+    thai.push(`มุมมอง: ${th("view").join(", ")||"-"}`);
+    thai.push(`องค์ประกอบ: ${th("sitel").join(", ")||"-"}`);
+    thai.push(`การนำเสนอ: ${th("spopt").join(", ")||"-"}`);
+  } else thai.push(inside?`ห้อง: ${th("room").join(", ")||"-"}`:`อาคาร: ${th("bldg").join(", ")||"-"}`);
+  if(m==="reno" && th("reno").length) thai.push(`ต่อเติม/ปรับปรุง: ${th("reno").join(", ")}`);
+  thai.push(`สไตล์: ${th("style").join(", ")||"-"} · โทนสี: ${th("color").join(", ")||"-"}`);
+  thai.push(`วัสดุ: ${[...th("mat"),...th("pre")].join(", ")||"-"}`);
+  thai.push(`แสง: ${th("light").join(", ")||"-"} · บริบท: ${[...th("ctx"),...(m==="siteplan"||m==="drawing"?[]:inside?th("inter"):th("land"))].join(", ")||"-"}`);
+  thai.push(m==="siteplan"||m==="drawing"?`สัดส่วน ${S.ar}`:`กล้อง: ${th("cam").join(", ")||"-"} · สัดส่วน ${S.ar}`);
+  if(hasSrc && m==="drawing") thai.push(`การรักษาแบบเดิม: ${["","ปรับได้อิสระ","สมดุล","ล็อกผนัง ช่องเปิด และสเกล 100%"][S.keep]}`);
+  else if(hasSrc) thai.push(m==="siteplan"?`การรักษาผังเดิม: ${srcOf()==="drone"?"คงบริบทรอบที่ดินตามภาพจริง เปลี่ยนเฉพาะในขอบเขตที่ดิน":["","ปรับได้อิสระ","สมดุล","ล็อกตำแหน่งถนน/แปลง/อาคาร 100%"][S.keep]}`:`การรักษารูปทรงเดิม: ${["","ปรับได้อิสระ","สมดุล","ล็อกรูปทรงเดิม 100%"][S.keep]}` + (S.keep===3?" (ไม่ใส่มุมกล้องใน prompt เพื่อให้ใช้มุมจากภาพต้นฉบับ)":""));
+  if(rb){
+    thai.push(`\nรูป Reference (${rb.n} รูป · น้ำหนัก${["","แค่แรงบันดาลใจ","ชัดเจน","ตาม Ref มากที่สุด"][S.refW]}):`);
+    rb.list.forEach((r,i)=>thai.push(`• ภาพที่ ${rb.start+i}: ${r.asp.map(k=>ASP.find(x=>x[0]===k)?.[1]).join(", ")||"สไตล์โดยรวม"}${r.note.trim()?` — ${r.note.trim()}`:""}`));
+    if(S.engine==="mj") thai.push("• Midjourney: แทนที่ [URL Ref] ด้วยลิงก์รูป --sref จะดึงเฉพาะสไตล์/สี/แสง ถ้าต้องการวัตถุเฉพาะ เช่น เฟอร์นิเจอร์ ให้ใช้ --oref แทน");
+    if(hasSrc && rb.list.some(r=>r.asp.includes("comp")) && S.keep===3) thai.push("• หมายเหตุ: ตั้งล็อกรูปทรงไว้ 100% ระบบจะใช้มุมกล้องจากภาพต้นฉบับ ไม่ใช้จาก Ref");
+  }
+  thai.push(`\nเคล็ดลับ: ` + ({
+    reno:"ถ่ายภาพต้นฉบับตรง ๆ ให้เห็นทั้งอาคาร ถ้าส่วนต่อเติมมีขนาดชัดเจน ให้ระบุในช่องรายละเอียด เช่น 'carport 6x5 m on the left, flat roof' ผลจะตรงขึ้นมาก",
+    photo:"ถ้าในภาพมีสายไฟหรือของรก ให้เพิ่มคำว่า 'remove power lines and clutter' ในช่องรายละเอียด",
+    sketch:"เส้นยิ่งชัดผลยิ่งตรง ใส่วัสดุให้ครบทุกพื้นผิว ส่วนที่ไม่ได้ระบุ AI จะเดาเอง",
+    model:"ก่อนแคปภาพ SketchUp ให้ปิด Profiles/Edges และเปิด Shadows จะได้ผลสมจริงกว่าเดิมมาก",
+    exterior:"ถ้าต้องการภาพหลายมุมที่ดูเป็นงานเดียวกัน ให้คงคำสไตล์ วัสดุ และโทนสีไว้เหมือนเดิม แล้วเปลี่ยนแค่มุมกล้อง",
+    drawing:"แปลนที่ส่งให้ AI ควรมีสัญลักษณ์เฟอร์นิเจอร์อยู่แล้ว AI จะวางเฟอร์นิเจอร์ตรงตำแหน่ง ให้ปิดเลเยอร์เส้นมิติและ hatch ก่อน export รูปด้านและรูปตัดใช้สัดส่วน 16:9 หรือ 3:2 ส่วน Isometric ตัดหลังคาทำจากแปลนได้เลย ถ้าต้องการชุดภาพที่ดูเป็นงานเดียวกัน ให้ใช้วัสดุและโทนสีชุดเดียวกันทุกภาพ",
+    siteplan:"ผัง CAD ให้ export เป็นภาพเส้นชัดพื้นขาว แล้วลงสีโซนคร่าว ๆ ก่อนส่ง (ถนนสีเทา สวนสีเขียว น้ำสีฟ้า หลังคาสีส้ม) AI จะอ่านผังได้ตรงขึ้นมาก ถ้าโครงการใหญ่ ให้ทำทีละโซนแล้วค่อยนำมารวม ส่วนมุมผังตรง 90° ให้เลือกสัดส่วนภาพตามรูปที่ดิน",
+    interior:"ระบุวัสดุพื้น ผนัง และฝ้าให้ครบ แล้วใช้แสงธรรมชาติร่วมกับไฟภายใน ภาพจะดูสมจริงที่สุด"
+  })[m]);
+
+  return {main, neg, thai:thai.join("\n"), showNeg: !eng.edit};
+}
+
+function update(){
+  const m=S.mode, inside=isInterior(), hasSrc=!!srcOf();
+  const sp=m==="siteplan";
+  const dw=m==="drawing";
+  $("siteFields").classList.toggle("hidden", !sp);
+  $("drawFields").classList.toggle("hidden", !dw);
+  $("bldgField").classList.toggle("hidden", sp);
+  $("camField").classList.toggle("hidden", sp||dw);
+  $("roomField").classList.toggle("hidden", m==="exterior"||sp);
+  $("renoField").classList.toggle("hidden", m!=="reno");
+  $("landField").classList.toggle("hidden", m==="interior"||sp||dw);
+  $("interField").classList.toggle("hidden", m==="exterior"||sp||dw);
+  $("keepField").classList.toggle("hidden", !hasSrc);
+  $("keepMax").textContent = sp ? "ล็อกผังเดิม 100%" : dw ? "ล็อกแบบเดิม 100%" : "ล็อกรูปทรงเดิม 100%";
+  $("refWrap").classList.toggle("hidden", !hasSrc);
+  if(typeof renderRefs==="function" && update._ctx!==isInterior()+S.mode+srcOf()){update._ctx=isInterior()+S.mode+srcOf();renderRefs()}
+  const r=build();
+  $("pMain").textContent=r.main;
+  $("pNeg").textContent=r.neg;
+  $("negWrap").classList.toggle("hidden", !r.showNeg);
+  $("pTh").textContent=r.thai;
+  $("cnt").textContent = r.main.split(/\s+/).length+" คำ";
+  store.set("rps_state",S);
+}
+
+/* copy */
+document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{
+  const t=$(b.dataset.copy).textContent, old=b.textContent;
+  try{await navigator.clipboard.writeText(t);b.textContent="คัดลอกแล้ว ✓"}
+  catch(e){ if(SU){suCall("copy_text",{text:t});b.textContent="คัดลอกแล้ว ✓";setTimeout(()=>b.textContent=old,1600);return}const r=document.createRange();r.selectNodeContents($(b.dataset.copy));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="เลือกข้อความแล้ว กดคัดลอกเองได้เลย"}
+  setTimeout(()=>b.textContent=old,1600);
+});
+$("shuffle").onclick=()=>{variant++;update()};
+
+/* presets */
+function renderPresets(){
+  const p=store.get("rps_presets",{});
+  $("presets").innerHTML = Object.keys(p).length ? Object.keys(p).map(n=>`<span class="chip" data-p="${n.replace(/"/g,'&quot;')}">${n} <span data-del="${n.replace(/"/g,'&quot;')}" style="opacity:.6;margin-left:4px">✕</span></span>`).join("") : `<span style="color:var(--mute);font-size:12.5px">ยังไม่มีค่าตั้งที่บันทึกไว้</span>`;
+  $("presets").querySelectorAll("[data-p]").forEach(c=>c.onclick=e=>{
+    if(e.target.dataset.del){const q=store.get("rps_presets",{});delete q[e.target.dataset.del];store.set("rps_presets",q);renderPresets();return}
+    S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),p[c.dataset.p]);refreshAll();
+  });
+}
+$("savePreset").onclick=()=>{const n=$("presetName").value.trim();if(!n)return;const p=store.get("rps_presets",{});p[n]=JSON.parse(JSON.stringify(S));store.set("rps_presets",p);$("presetName").value="";renderPresets()};
+$("reset").onclick=()=>{S=JSON.parse(JSON.stringify(DEFAULT));refreshAll()};
+
+function refreshAll(){buildModes();buildEngines();buildChips();syncInputs();update()}
+/* ---------- SKETCHUP BRIDGE ---------- */
+const SU = typeof window.sketchup!=="undefined";
+function suCall(n,o){try{window.sketchup[n](JSON.stringify(o||{}))}catch(e){$("suStatus").textContent="เรียก SketchUp ไม่สำเร็จ: "+e}}
+function suOpts(kind){return {kind,width:+$("suW").value,hideEdges:$("suEdges").checked,shadows:$("suShadow").checked}}
+if(SU){
+  $("suCard").classList.remove("hidden");
+  if(window.RPS_HOST==="Revit"){
+    $("suHost").textContent="Revit";
+    $("lblEdges").textContent="เปลี่ยนเป็นโหมด Realistic ตอนแคป";
+    $("suShadowWrap").classList.add("hidden"); $("suShadow").checked=false;
+  }
+  $("suSrc").onclick=()=>{$("suStatus").textContent="กำลังแคปภาพ…";suCall("capture",suOpts("source"))};
+  $("suRef").onclick=()=>{$("suStatus").textContent="กำลังแคปภาพ…";suCall("capture",suOpts("ref"))};
+  $("suInfo").onclick=()=>suCall("model_info");
+  $("suFolder").onclick=()=>suCall("open_folder");
+  $("suSave").onclick=()=>suCall("save_prompt",{text:$("pMain").textContent+(ENGINES[S.engine].edit?"":"\n\nNEGATIVE:\n"+$("pNeg").textContent)+"\n\n---\n"+$("pTh").textContent});
+}
+window.rpsFromSketchUp=async function(o){
+  if(o.error){$("suStatus").textContent="แคปไม่สำเร็จ: "+o.error;return}
+  if(o.kind==="source"){
+    if(S.mode==="exterior"||S.mode==="interior") S.mode="model";
+    if(S.mode==="siteplan") S.spsrc=["model"];
+    if(S.mode==="drawing") S.dsrc=["model"];
+    $("prev").src=o.data; $("prev").classList.remove("hidden");
+    refreshAll(); renderRefs();
+  } else {
+    if(S.mode!=="interior" && !isInterior()) S.refTab="ext";
+    const d=await shrinkSrc(o.data); if(d) pushRef(d); renderRefs(); update();
+  }
+  $("suStatus").textContent="บันทึกภาพแล้ว: "+o.path;
+};
+window.rpsModelInfo=function(o){
+  const parts=[];
+  if(o.size) parts.push(`overall size about ${o.size}`);
+  if(o.materials&&o.materials.length) parts.push(`model materials: ${o.materials.join(", ")}`);
+  if(!parts.length){$("suStatus").textContent="ไม่พบข้อมูลวัสดุในโมเดล";return}
+  S.note=(S.note.trim()?S.note.trim()+"; ":"")+parts.join("; ");
+  syncInputs(); update();
+  $("suStatus").textContent="เพิ่มข้อมูลโมเดลลงช่องรายละเอียดแล้ว แก้ไขเพิ่มได้";
+};
+window.rpsStatus=function(t){$("suStatus").textContent=t};
+
+/* ---------- MOBILE BAR ---------- */
+(function(){
+  const out=document.querySelector(".out"); let atOut=false;
+  $("mGo").onclick=()=>{ if(atOut) window.scrollTo({top:0,behavior:"smooth"}); else out.scrollIntoView({behavior:"smooth",block:"start"}); };
+  try{ new IntersectionObserver(es=>{atOut=es[0].isIntersecting;$("mGo").textContent=atOut?"กลับไปตั้งค่า ↑":"ดู Prompt ↓";},{threshold:.05}).observe($("pMain")); }catch(e){}
+  $("mCopy").onclick=async()=>{const b=$("mCopy"),t=$("pMain").textContent;
+    try{await navigator.clipboard.writeText(t);b.textContent="คัดลอกแล้ว ✓"}
+    catch(e){ if(SU){suCall("copy_text",{text:t});b.textContent="คัดลอกแล้ว ✓"} else {out.scrollIntoView({block:"start"});const r=document.createRange();r.selectNodeContents($("pMain"));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent="เลือกข้อความแล้ว"} }
+    setTimeout(()=>b.textContent="คัดลอก Prompt",1600);};
+})();
+
+refreshAll();renderPresets();renderRefs();
+if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost")){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+DB.open().then(()=>DB.all()).then(a=>{REFS=a.sort((x,y)=>(x.t||0)-(y.t||0));renderRefs();update()});
+</script>
+</body>
+</html>
