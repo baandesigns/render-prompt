@@ -143,7 +143,7 @@ header{padding-top:calc(22px + env(safe-area-inset-top,0px))}
     <h2><span class="n">A</span>Auto Prompt — ชุดภาพสำเร็จรูป</h2>
     <div id="apList"></div>
     <div id="quadBox" class="hidden" style="margin-top:6px">
-      <h4 style="margin:4px 0 2px;font-size:13px">กำหนดแต่ละช่องของคอลลาจ</h4>
+      <h4 id="quadTitle" style="margin:4px 0 2px;font-size:13px">กำหนดแต่ละช่องของคอลลาจ</h4>
       <div style="font-size:12px;color:var(--mute)">เลือกจุดที่จะซูมในแต่ละช่อง และพิมพ์รายละเอียดเพิ่มได้ (ภาษาอังกฤษดีที่สุด)</div>
       <div id="quadGrid" class="quad"></div>
       <button class="btn ghost" id="quadReset" style="margin:4px 0 8px">ใช้ค่าเริ่มต้น</button>
@@ -323,7 +323,7 @@ let variant = 0;
 // scope: in = interior, ex = exterior, all = both. keep: scene | design | plan. text: board allows text.
 const AP_GROUPS=[["light","ภาพบรรยากาศ / แสง"],["detail","รายละเอียด · คน · พร็อพ"],["board","บอร์ดนำเสนอ"],["draw","3D / แบบ"]];
 const QOPT={
- ex:[["shadow","เงาต้นไม้บนผนัง","a tight close-up of the upper facade, focusing on the dappled tree shadow patterns cast across the wall surface, with a sliver of roof edge and blue sky"],
+ detail:{ex:[["shadow","เงาต้นไม้บนผนัง","a tight close-up of the upper facade, focusing on the dappled tree shadow patterns cast across the wall surface, with a sliver of roof edge and blue sky"],
      ["entrance","ประตูทางเข้า","an eye-level, centered close-up of the front entrance door, framed by the surrounding wall cladding, with the approach path below"],
      ["screen","บล็อกช่องลม / แผงบังแดด","a detailed close-up of the breeze-block or sun-screen panel, showing each module, its repeated pattern and the material texture"],
      ["landscape","ภูมิทัศน์ทางเดิน","a close-up of the front landscaping: stepping-stone path set into the lawn, lined with neatly clipped shrubs, the facade softly out of focus behind"],
@@ -335,7 +335,7 @@ const QOPT={
      ["gate","รั้ว/ประตูรั้ว","a close-up of the front gate and fence detail with the house number"],
      ["balcony","ระเบียง/ราวกันตก","a close-up of the balcony edge and railing detail"],
      ["carport","โรงจอดรถ","a medium close-up of the carport area with its ceiling, columns and floor finish"]],
- in:[["material","ผิววัสดุ","an extreme close-up of the main surface material texture (wood grain, stone veining or plaster) in soft side light"],
+  in:[["material","ผิววัสดุ","an extreme close-up of the main surface material texture (wood grain, stone veining or plaster) in soft side light"],
      ["lightfix","โคมไฟ","a close-up of the feature lighting fixture, glowing softly"],
      ["joinery","รอยต่อเฟอร์นิเจอร์","a close-up of furniture joinery and edge detail, showing craftsmanship"],
      ["vignette","มุมแต่งพร็อพ","a styled decor vignette on a shelf or console: books, ceramics and a small plant"],
@@ -346,21 +346,75 @@ const QOPT={
      ["chair","เก้าอี้/โซฟา","a close-up of the chair or sofa, showing its form and fabric"],
      ["plant","มุมต้นไม้","a close-up of an indoor plant corner with natural light"],
      ["floor","แสงบนพื้น","a close-up of sunlight falling across the floor finish"],
-     ["ceiling","ฝ้า/ฝ้าหลุม","a close-up of the ceiling detail with concealed lighting"]]};
+     ["ceiling","ฝ้า/ฝ้าหลุม","a close-up of the ceiling detail with concealed lighting"]]},
+ angle:{all:[["wide24","มุมกว้าง 24mm","a wide establishing shot at eye level, 24mm lens, showing the whole space"],
+   ["front50","หน้าตรงสมมาตร 50mm","a perfectly symmetrical frontal elevation view, 50mm lens, centered composition"],
+   ["corner35","มุมเฉียง 35mm","a three-quarter corner view, 35mm lens"],
+   ["side50","มุมข้างตามแนวยาว","a side view along the length of the space, 50mm lens"],
+   ["through","ผ่านฉากหน้าเบลอ","a view framed past a soft out-of-focus foreground object, 50mm lens, layered depth"],
+   ["low","มุมต่ำ","a low-angle hero shot from near the floor, 24mm lens"],
+   ["high","มุมสูงมองลง","a high-angle view looking down across the space, 35mm lens"],
+   ["top","มุมบนตรง","a straight top-down bird's-eye view of the main furniture group"],
+   ["reverse","มุมกลับ","a reverse angle looking back toward the windows or entrance, with natural backlight"],
+   ["detail85","ใกล้ชิดเฟอร์นิเจอร์ 85mm","a close-up of a key furniture piece, 85mm lens, shallow depth of field"],
+   ["macro","มาโครวัสดุ/งานศิลป์","a macro close-up of a material texture or artwork, 100mm lens, very shallow depth of field"],
+   ["lamp","โคมไฟเรืองแสง","a close-up of a lighting fixture glowing softly, background blurred"]]},
+ life:{in:[["read","อ่านหนังสือบนโซฟา","an adult relaxing and reading a book on the sofa, wide shot"],
+   ["kid","เด็กเล่นตัวต่อบนพรม","a child playing with wooden blocks on the rug, close-up at child's eye level"],
+   ["window","ยืนดื่มกาแฟริมหน้าต่าง","a person standing by the window with a coffee cup, looking outside"],
+   ["tea","มุมบนโต๊ะน้ำชา + แมว","a top-down view of hands pouring tea on the coffee table, an open book and a cat curled nearby"],
+   ["dog","สุนัขนอนบนพื้น","a dog resting on the floor in the foreground, the living space softly blurred behind"],
+   ["family","พ่อแม่ลูกหัวเราะบนโซฟา","a parent and child laughing together on the sofa, warm candid moment"],
+   ["cook","ทำอาหารในครัว","someone cooking at the kitchen counter, steam rising, natural light"],
+   ["dinner","ทานอาหารพร้อมหน้า","a family sharing a meal at the dining table"],
+   ["work","ทำงานด้วยแล็ปท็อป","a person working on a laptop at the desk or table"],
+   ["yoga","ยืดเหยียด/โยคะยามเช้า","a person doing a gentle morning stretch on a mat in soft light"]],
+  ex:[["arrive","ครอบครัวกลับถึงบ้าน","a family arriving home through the front gate"],
+   ["lawn","เด็กเล่นบนสนามหญ้า","children playing on the front lawn"],
+   ["terrace","คู่รักนั่งที่ระเบียง","a couple relaxing with drinks on the terrace"],
+   ["garden","รดน้ำต้นไม้","someone watering the garden plants"],
+   ["bbq","ปาร์ตี้ปิ้งย่างยามเย็น","friends gathering for an evening barbecue in the garden"],
+   ["bike","ปั่นจักรยานออกจากบ้าน","a person cycling out of the driveway"],
+   ["pool","ว่ายน้ำ/นั่งริมสระ","people swimming and lounging by the pool"],
+   ["dogwalk","จูงสุนัขเดินเล่น","a person walking a dog along the front path"]]}};
 const QDEF={ex4:["shadow","entrance","screen","landscape"],in4:["material","lightfix","joinery","vignette"],
  ex9:["shadow","entrance","screen","window","roof","wall","slat","light","landscape"],
- in9:["material","lightfix","joinery","vignette","kitchen","textile","hardware","plant","floor"]};
+ in9:["material","lightfix","joinery","vignette","kitchen","textile","hardware","plant","floor"],
+ angle4:["wide24","front50","corner35","detail85"],
+ angle9:["wide24","front50","corner35","through","low","top","detail85","macro","reverse"],
+ lifein6:["read","window","kid","tea","dog","family"],
+ lifeex6:["arrive","lawn","terrace","garden","bbq","dogwalk"]};
 const QPOS={4:["Top-left","Top-right","Bottom-left","Bottom-right"],
+ 6:["Row 1 left","Row 1 right","Row 2 left","Row 2 right","Row 3 left","Row 3 right"],
  9:["Top-left","Top-center","Top-right","Middle-left","Center","Middle-right","Bottom-left","Bottom-center","Bottom-right"]};
-const QPOS_TH={4:["บนซ้าย","บนขวา","ล่างซ้าย","ล่างขวา"],9:["บนซ้าย","บนกลาง","บนขวา","กลางซ้าย","ตรงกลาง","กลางขวา","ล่างซ้าย","ล่างกลาง","ล่างขวา"]};
-const qKey=(n)=>(isInterior()?"in":"ex")+n;
-const qPanels=(n)=>{const k=qKey(n), d=QDEF[k]; const cur=(S.q&&S.q[k])||[]; return d.map((x,i)=>cur[i]||x);};
-function makeGrid(c,n){
-  const sc=c.inside?"in":"ex", k=sc+n, ids=qPanels(n);
+const QPOS_TH={4:["บนซ้าย","บนขวา","ล่างซ้าย","ล่างขวา"],6:["แถว 1 ซ้าย","แถว 1 ขวา","แถว 2 ซ้าย","แถว 2 ขวา","แถว 3 ซ้าย","แถว 3 ขวา"],9:["บนซ้าย","บนกลาง","บนขวา","กลางซ้าย","ตรงกลาง","กลางขวา","ล่างซ้าย","ล่างกลาง","ล่างขวา"]};
+const qSc=()=>isInterior()?"in":"ex";
+const qOpts=(kind)=>{const o=QOPT[kind]; return o[qSc()]||o.all;};
+const qKey=(n,kind)=>{kind=kind||"detail"; return kind==="detail"?qSc()+n : kind==="angle"?"angle"+n : kind+qSc()+n;};
+const qPanels=(n,kind)=>{const k=qKey(n,kind), d=QDEF[k]||[]; const cur=(S.q&&S.q[k])||[]; return d.map((x,i)=>cur[i]||x);};
+function qPhrases(n,kind){const k=qKey(n,kind), opts=qOpts(kind);
+  return qPanels(n,kind).map((id,i)=>{const o=opts.find(x=>x[0]===id)||opts[0]; const note=((S.qn||{})[k+"-"+i]||"").trim(); return o[2]+(note?", "+note:"");});}
+function makeGrid(c,n,kind){
+  kind=kind||"detail";
+  const ph=qPhrases(n,kind), gridTxt={4:"2×2",6:"two columns by three rows",9:"3×3"}[n], num={4:"four",6:"six",9:"nine"}[n];
+  if(kind==="angle"){
+    const out=[c.hasSrc?`Study Image 1 carefully and extract its complete architectural layout, furniture placement, materials, finishes, lighting setup, color palette and decorative elements`:`Design ${c.base} in full detail`,
+      `then create a cohesive ${gridTxt} cinematic contact sheet of this identical ${c.inside?"interior":"building"} photographed from ${num} different camera positions`,
+      "shot list in reading order"];
+    ph.forEach((t,i)=>out.push(`frame ${i+1} (${QPOS[n][i].toLowerCase()}): ${t}`));
+    out.push("every frame shows exactly the same space, furniture, materials and lighting with no changes or additions","consistent cinematic color grade and photorealistic quality across all frames, thin clean white borders between frames");
+    return out;
+  }
+  if(kind==="life"){
+    const out=[c.hasSrc?"Using Image 1, keep the space exactly as designed: same layout, furniture, materials, colors, lighting fixtures and decor":`A lifestyle photo set of ${c.base}`,
+      `create a set of ${num} professional lifestyle photographs of everyday life inside this same space, arranged in a clean grid of ${gridTxt} with equal frames and thin white gaps`];
+    ph.forEach((t,i)=>out.push(`${QPOS[n][i]}: ${t}`));
+    out.push("natural candid moments, people (Asian family) correctly scaled and naturally lit, warm natural light, editorial lifestyle photography, consistent color grade across all frames");
+    return out;
+  }
   const what=c.hasSrc?`all taken from the ${c.inside?"interior":"building"} design in Image 1`:`all showing ${c.base}`;
-  const out=[`A high-resolution, professional architectural photography collage of ${n===4?"four":"nine"} square close-up photographs arranged in a ${n===4?"2×2":"3×3"} grid, ${what}`];
-  ids.forEach((id,i)=>{const o=QOPT[sc].find(x=>x[0]===id)||QOPT[sc][0]; const note=((S.qn||{})[k+"-"+i]||"").trim();
-    out.push(`${QPOS[n][i]} panel: ${o[2]}${note?", "+note:""}`);});
+  const out=[`A high-resolution, professional architectural photography collage of ${num} square close-up photographs arranged in a ${gridTxt} grid, ${what}`];
+  ph.forEach((t,i)=>out.push(`${QPOS[n][i]} panel: ${t}`));
   out.push(`each panel has precise, sharp focus on its own subject to highlight a different material texture${c.mats?` (${c.mats})`:""}`);
   out.push(c.hasSrc?"the lighting, colors and style match Image 1 exactly and stay consistent across all panels":`consistent lighting and color grading across all panels${c.light?", "+c.light:""}`);
   out.push("clean, modern, high-end look; thin, crisp white grid lines between the photos");
@@ -388,6 +442,9 @@ const AUTO=[
  {id:"d08",g:"detail",scope:"in",th:"รายละเอียด 9 ช็อต",en:"Details 3×3 collage",keep:"design",ar:"1:1",grid:9,noMat:1,make:c=>makeGrid(c,9)},
  {id:"x07",g:"detail",scope:"ex",th:"รายละเอียดภายนอก 4 ช็อต",en:"Exterior details 2×2",keep:"design",ar:"1:1",grid:4,noMat:1,make:c=>makeGrid(c,4)},
  {id:"x08",g:"detail",scope:"ex",th:"รายละเอียดภายนอก 9 ช็อต",en:"Exterior details 3×3",keep:"design",ar:"1:1",grid:9,noMat:1,make:c=>makeGrid(c,9)},
+ {id:"v09",g:"detail",scope:"all",th:"Contact sheet 9 มุมกล้อง",en:"3×3 camera angles",keep:"design",ar:"1:1",grid:9,kind:"angle",noMat:1,make:c=>makeGrid(c,9,"angle")},
+ {id:"v04",g:"detail",scope:"all",th:"4 มุมกล้อง",en:"2×2 camera angles",keep:"design",ar:"1:1",grid:4,kind:"angle",noMat:1,make:c=>makeGrid(c,4,"angle")},
+ {id:"v06",g:"detail",scope:"all",th:"ไลฟ์สไตล์ 6 ภาพ",en:"Lifestyle set 2×3",keep:"design",ar:"4:5",grid:6,kind:"life",noMat:1,make:c=>makeGrid(c,6,"life")},
  {id:"d17",add:1,g:"detail",scope:"all",th:"เพิ่มคน",en:"Add people",keep:"scene",env:1,make:c=>[c.hasSrc?"Add people to Image 1":`A photorealistic ${c.word} photograph of ${c.base} with people`,`two or three people (Asian, smart casual clothing) naturally using the space, correct scale and perspective, lit by the same light as the scene, natural poses, not looking at the camera`,c.hasSrc?"keep everything else exactly the same":""]},
  {id:"d18",add:1,g:"detail",scope:"all",th:"เพิ่มคน แบบเคลื่อนไหว",en:"People in motion",keep:"scene",env:1,make:c=>[c.hasSrc?"Add people in motion to Image 1":`A photorealistic ${c.word} photograph of ${c.base} with people in motion`,"people walking through the space with slight motion blur from a long exposure, the architecture and furniture stay perfectly sharp, lively sense of movement",c.hasSrc?"keep everything else exactly the same":""]},
  {id:"d19",add:1,g:"detail",scope:"in",th:"เพิ่มพร็อพ",en:"Add props",keep:"scene",env:1,make:c=>[c.hasSrc?"Style Image 1 with props":`A photorealistic interior photograph of ${c.base}, fully styled`,"add lifestyle styling props: books, plants, vases, ceramics, throw blankets, cushions, a fruit bowl and artwork, placed naturally without clutter",c.hasSrc?"keep the architecture and main furniture exactly the same":""]},
@@ -405,6 +462,18 @@ const AUTO=[
  {id:"r13",g:"draw",scope:"all",th:"โมเดลสเกลจำลอง",en:"Scale model",keep:"design",ar:"4:3",make:c=>[`A physical architectural scale model of ${pv(c)} on a studio table`,c.inside?"1:20 model with cut-away walls and miniature furniture":"1:100 model with landscape base and tiny trees","basswood, white card and acrylic, warm desk-lamp light, shallow depth of field, realistic model photography"]},
  {id:"r16",g:"draw",scope:"all",th:"ลายเส้น + สีน้ำ",en:"Art line",keep:"scene",cam:1,make:c=>[c.hasSrc?"Redraw Image 1 as an architectural illustration":`An architectural illustration of ${c.base}`,"fine black ink line drawing with loose watercolor wash, partly colored and partly left as line work, textured white paper, hand-drawn sketch style"]},
  {id:"r22",g:"draw",scope:"in",th:"แบบรูปด้านภายใน",en:"Interior elevation sheet",keep:"design",ar:"3:2",text:1,make:c=>[`A technical interior elevation drawing sheet for ${pv(c)}`,"elevations of each wall with dimension lines, a reflected ceiling plan, lighting legend and notes, title block","black line drawing on white, CAD drafting style, light grey material hatching"]},
+ {id:"t30",g:"draw",scope:"in",th:"แบบก่อสร้างฝ้าเพดาน",en:"Ceiling execution drawings",keep:"design",ar:"4:3",text:1,
+   noteTh:"ขนาดในแบบเป็นค่าประมาณจากภาพ ต้องวัดหน้างานและตรวจโดยสถาปนิก/วิศวกรก่อนใช้ก่อสร้าง",
+   make:c=>[c.hasSrc?"Act as an architect specialising in gypsum-board suspended ceilings. Read the ceiling design in Image 1 and convert it into a professional ceiling execution drawing sheet for a contractor":`A professional ceiling execution drawing sheet for ${c.base}`,
+   "include: 1) reflected ceiling plan with overall dimensions, ceiling levels (e.g. FFL +2700 / +3000), cove lighting, linear LED profiles, downlights, AC slot diffusers and smoke detector; 2) longitudinal section; 3) cross section; 4) enlarged cove detail at 1:10 showing GI main channel, furring channel, 12 mm gypsum board, pre-formed cove profile, LED strip and corner bead",
+   "symbol legend table, numbered general notes (dimensions in mm, verify on site, moisture-resistant board, 3000K dimmable LED), and a title block with project name, drawing title and scale",
+   "black CAD line drawing on white, clean drafting conventions, dimension strings, section markers, crisp legible English text"]},
+ {id:"t31",g:"draw",scope:"in",th:"แบบงานระบบเบื้องต้น (ไฟฟ้า/ประปา/ระบายน้ำ)",en:"Preliminary MEP layouts",keep:"design",ar:"4:3",text:1,
+   noteTh:"เป็นแบบร่างเบื้องต้นจากสิ่งที่เห็นในภาพเท่านั้น ต้องให้วิศวกรไฟฟ้า/สุขาภิบาลที่มีใบอนุญาตออกแบบและตรวจหน้างานก่อนก่อสร้าง",
+   make:c=>[c.hasSrc?"Act as a mechanical, electrical and plumbing engineer. Based only on what is visible in Image 1, produce preliminary execution layouts on one sheet":`Preliminary MEP execution layouts on one sheet for ${c.base}`,
+   "panel 1: electrical power and lighting layout on the wall elevation (lighting points, mirror light, cove/LED strip, switch and outlet positions, exhaust fan, water heater connection); panel 2: water supply plumbing layout with cold water in blue and hot water in red, rough-in heights in mm above finished floor; panel 3: drainage and venting plan with floor drain, floor slope towards the drain and connection to the main stack; panel 4: symbol legend table with abbreviations and notes",
+   "a banner across the top: 'Preliminary / schematic layout — requires licensed engineer approval and on-site verification'; label anything not visible in the image as 'verification required'",
+   "clean technical line drawing on white, colored pipe lines, crisp legible English labels"]},
  {id:"r20",g:"draw",scope:"in",th:"แปลน 2D เป็น 3D",en:"2D plan to 3D plan",keep:"plan",ar:"1:1",make:c=>[c.hasSrc?"Convert the 2D floor plan in Image 1 into a top-down 3D rendered floor plan":`A top-down 3D rendered floor plan of ${c.base}`,"walls extruded and cut, every room furnished, realistic floor materials, soft shadows and ambient occlusion, clean white background"]}
 ];
 const apAllowed=()=>!["siteplan","drawing"].includes(S.mode);
@@ -414,14 +483,16 @@ const apActive=()=>{ if(!S.auto||!apAllowed()) return null; return apList().find
 function buildQuad(){
   const AP=apActive(), box=$("quadBox");
   if(!AP||!AP.grid){box.classList.add("hidden");return}
+  const kind=AP.kind||"detail";
+  $("quadTitle").textContent={detail:"กำหนดแต่ละช่องของคอลลาจ",angle:"กำหนดมุมกล้องแต่ละภาพ (Shot list)",life:"กำหนดฉากชีวิตประจำวันแต่ละภาพ"}[kind];
   box.classList.remove("hidden");
-  $("quadReset").onclick=()=>{const A=apActive(); if(!A||!A.grid) return; const kk=qKey(A.grid); if(S.q) delete S.q[kk]; if(S.qn) Object.keys(S.qn).forEach(x=>{if(x.startsWith(kk+"-")) delete S.qn[x]}); buildQuad(); update();};
-  const n=AP.grid, sc=isInterior()?"in":"ex", k=sc+n, ids=qPanels(n), g=$("quadGrid");
-  g.className="quad g"+n;
+  $("quadReset").onclick=()=>{const A=apActive(); if(!A||!A.grid) return; const kk=qKey(A.grid,A.kind); if(S.q) delete S.q[kk]; if(S.qn) Object.keys(S.qn).forEach(x=>{if(x.startsWith(kk+"-")) delete S.qn[x]}); buildQuad(); update();};
+  const n=AP.grid, k=qKey(n,kind), ids=qPanels(n,kind), opts=qOpts(kind), g=$("quadGrid");
+  g.className="quad g"+(n===6?4:n);
   g.innerHTML=ids.map((id,i)=>`<div class="qcell"><div class="pos">${QPOS_TH[n][i]}</div>
-    <select data-qi="${i}">${QOPT[sc].map(o=>`<option value="${o[0]}" ${o[0]===id?"selected":""}>${o[1]}</option>`).join("")}</select>
+    <select data-qi="${i}">${opts.map(o=>`<option value="${o[0]}" ${o[0]===id?"selected":""}>${o[1]}</option>`).join("")}</select>
     <input type="text" data-qn="${i}" placeholder="เพิ่มเติม เช่น wooden door" value="${(((S.qn||{})[k+"-"+i])||"").replace(/"/g,"&quot;")}"></div>`).join("");
-  g.querySelectorAll("[data-qi]").forEach(s=>s.onchange=()=>{S.q=S.q||{}; const arr=qPanels(n).slice(); arr[+s.dataset.qi]=s.value; S.q[k]=arr; update();});
+  g.querySelectorAll("[data-qi]").forEach(s=>s.onchange=()=>{S.q=S.q||{}; const arr=qPanels(n,kind).slice(); arr[+s.dataset.qi]=s.value; S.q[k]=arr; update();});
   g.querySelectorAll("[data-qn]").forEach(t=>t.oninput=()=>{S.qn=S.qn||{}; S.qn[k+"-"+t.dataset.qn]=t.value; update();});
 }
 function buildAuto(){
@@ -700,7 +771,8 @@ function build(){
   const mt = MODES[m].th;
   thai.push(`ประเภทงาน: ${mt}`);
   if(AP) thai.push(`Auto Prompt: ${AP.th} (${AP.en})`);
-  if(AP&&AP.grid){const sc=isInterior()?"in":"ex"; thai.push("  ช่อง: "+qPanels(AP.grid).map((id,i)=>`${QPOS_TH[AP.grid][i]}=${(QOPT[sc].find(o=>o[0]===id)||["",""])[1]}`).join(" · "));}
+  if(AP&&AP.grid){const o=qOpts(AP.kind||"detail"); thai.push("  ช่อง: "+qPanels(AP.grid,AP.kind).map((id,i)=>`${QPOS_TH[AP.grid][i]}=${(o.find(x=>x[0]===id)||["",""])[1]}`).join(" · "));}
+  if(AP&&AP.noteTh) thai.push("  ⚠ "+AP.noteTh);
   if(m==="drawing"){
     thai.push(`ภาพต้นฉบับ: ${th("dsrc").join(", ")||"-"} · ชนิดแบบ: ${th("dtype").join(", ")||"-"}`);
     thai.push(`อาคาร/ห้อง: ${(S.bldg.length?th("bldg"):th("room")).join(", ")||"-"}`);
