@@ -96,6 +96,14 @@ pre{white-space:pre-wrap;word-break:break-word;font-family:"IBM Plex Mono",monos
 .ap .no{font-size:10.5px;color:var(--acc);font-weight:700;letter-spacing:.3px}
 .ap.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--card))}
 .ap.none{grid-column:1/-1;text-align:center}
+.quad{display:grid;gap:8px;margin:6px 0 4px}
+.quad.g4{grid-template-columns:1fr 1fr}
+.quad.g9{grid-template-columns:1fr 1fr 1fr}
+@media (max-width:560px){.quad.g9{grid-template-columns:1fr 1fr}}
+.qcell{border:1px solid var(--line);border-radius:10px;padding:7px;background:var(--bg)}
+.qcell .pos{font-size:11px;font-weight:700;color:var(--acc);margin-bottom:4px}
+.qcell select,.qcell input{font-size:12.5px;padding:6px 7px}
+.qcell input{margin-top:5px}
 header{padding-top:calc(22px + env(safe-area-inset-top,0px))}
 </style>
 </head>
@@ -134,6 +142,12 @@ header{padding-top:calc(22px + env(safe-area-inset-top,0px))}
   <section class="card" id="apCard">
     <h2><span class="n">A</span>Auto Prompt — ชุดภาพสำเร็จรูป</h2>
     <div id="apList"></div>
+    <div id="quadBox" class="hidden" style="margin-top:6px">
+      <h4 style="margin:4px 0 2px;font-size:13px">กำหนดแต่ละช่องของคอลลาจ</h4>
+      <div style="font-size:12px;color:var(--mute)">เลือกจุดที่จะซูมในแต่ละช่อง และพิมพ์รายละเอียดเพิ่มได้ (ภาษาอังกฤษดีที่สุด)</div>
+      <div id="quadGrid" class="quad"></div>
+      <button class="btn ghost" id="quadReset" style="margin:4px 0 8px">ใช้ค่าเริ่มต้น</button>
+    </div>
     <div class="tip" id="apTip">เลือกชนิดผลลัพธ์ แล้ว prompt จะเปลี่ยนเป็นชุดสำเร็จรูปทันที สไตล์ วัสดุ และโทนสีที่ตั้งไว้ด้านล่างจะถูกใส่ให้อัตโนมัติ ถ้ามีภาพต้นฉบับ AI จะคงงานออกแบบเดิมไว้</div>
   </section>
 
@@ -300,7 +314,7 @@ const G = {
   dopt:[["clean","ลบตัวหนังสือ/เส้นมิติ","remove all text, dimensions, grid lines and annotations"],["labels","คงชื่อห้อง","keep clean minimal room name labels"],["poche","ผนังตัดสีดำ (poché)","cut walls and slabs shown as solid dark poché"],["shadow","เงาเฟอร์นิเจอร์","soft realistic shadows under furniture"],["ground","แสดงดินและฐานราก","ground line with soil, footings and piles shown in section"],["sky","ท้องฟ้า/ต้นไม้ฉากหลัง","sky and trees in the background"],["whitebg","พื้นหลังขาว","clean white background"]],
   cam:[["eye","ระดับสายตา","eye-level perspective, 24mm lens"],["wide","มุมกว้าง","wide-angle shot, 16mm lens"],["corner","มุมเฉียง 3/4","three-quarter corner view, 28mm lens"],["front","ตรงด้านหน้า","straight-on frontal elevation view, 35mm lens"],["aerial","มุมสูง/โดรน","aerial drone view, 45 degree angle"],["low","มุมต่ำ","low-angle hero shot"],["detail","ภาพรายละเอียด","close-up detail shot, 85mm lens, shallow depth of field"],["tilt","Tilt-shift ตรง","tilt-shift lens, perfectly vertical lines"]]
 };
-const DEFAULT = {auto:"",layout:[],ldeco:[],arCustom:"",mode:"exterior",engine:"nano",bldg:["twohouse"],room:["living"],reno:[],style:["tropical"],mat:["white","wood"],pre:[],color:["natural"],light:["day"],ctx:["suburb"],land:["trees","lawn"],inter:["furn","plants"],cam:["corner"],spsrc:["plan"],proj:["estate"],view:["aerial45"],sitel:["roads","roofs","trees","park"],spopt:["clean","shadow"],dsrc:["cad"],dtype:["plan"],fur:["living","dining","bed","kitchen","bath","rug","plants","decor"],dstyle:["photo"],dopt:["clean","poche","shadow"],refW:2,refTab:"ext",ar:"16:9",res:"4k",keep:3,note:""};
+const DEFAULT = {q:{},qn:{},auto:"",layout:[],ldeco:[],arCustom:"",mode:"exterior",engine:"nano",bldg:["twohouse"],room:["living"],reno:[],style:["tropical"],mat:["white","wood"],pre:[],color:["natural"],light:["day"],ctx:["suburb"],land:["trees","lawn"],inter:["furn","plants"],cam:["corner"],spsrc:["plan"],proj:["estate"],view:["aerial45"],sitel:["roads","roofs","trees","park"],spopt:["clean","shadow"],dsrc:["cad"],dtype:["plan"],fur:["living","dining","bed","kitchen","bath","rug","plants","decor"],dstyle:["photo"],dopt:["clean","poche","shadow"],refW:2,refTab:"ext",ar:"16:9",res:"4k",keep:3,note:""};
 let S = JSON.parse(JSON.stringify(DEFAULT));
 function srcOf(){ if(S.mode==="drawing"){const d=(S.dsrc&&S.dsrc[0])||"cad";return d==="none"?null:d;} if(S.mode!=="siteplan") return MODES[S.mode].src; const s=(S.spsrc&&S.spsrc[0])||"plan"; return s==="none"?null:s; }
 let variant = 0;
@@ -308,6 +322,50 @@ let variant = 0;
 /* ---------- AUTO PROMPT PRESETS ---------- */
 // scope: in = interior, ex = exterior, all = both. keep: scene | design | plan. text: board allows text.
 const AP_GROUPS=[["light","ภาพบรรยากาศ / แสง"],["detail","รายละเอียด · คน · พร็อพ"],["board","บอร์ดนำเสนอ"],["draw","3D / แบบ"]];
+const QOPT={
+ ex:[["shadow","เงาต้นไม้บนผนัง","a tight close-up of the upper facade, focusing on the dappled tree shadow patterns cast across the wall surface, with a sliver of roof edge and blue sky"],
+     ["entrance","ประตูทางเข้า","an eye-level, centered close-up of the front entrance door, framed by the surrounding wall cladding, with the approach path below"],
+     ["screen","บล็อกช่องลม / แผงบังแดด","a detailed close-up of the breeze-block or sun-screen panel, showing each module, its repeated pattern and the material texture"],
+     ["landscape","ภูมิทัศน์ทางเดิน","a close-up of the front landscaping: stepping-stone path set into the lawn, lined with neatly clipped shrubs, the facade softly out of focus behind"],
+     ["window","หน้าต่าง/กระจก","a close-up of a window and its frame, with soft reflections of sky and trees on the glass"],
+     ["roof","ชายคา/ขอบหลังคา","a low-angle close-up of the roof edge and eave line against the sky, showing the fascia and soffit detail"],
+     ["wall","ผิววัสดุผนัง","an extreme close-up of the wall cladding texture (stone, brick or plaster) in raking sunlight"],
+     ["slat","ระแนงไม้","a close-up of the wooden slat detail, showing grain, joints and the rhythm of the slats"],
+     ["light","โคมไฟภายนอก","a close-up of an exterior wall light fixture on the facade"],
+     ["gate","รั้ว/ประตูรั้ว","a close-up of the front gate and fence detail with the house number"],
+     ["balcony","ระเบียง/ราวกันตก","a close-up of the balcony edge and railing detail"],
+     ["carport","โรงจอดรถ","a medium close-up of the carport area with its ceiling, columns and floor finish"]],
+ in:[["material","ผิววัสดุ","an extreme close-up of the main surface material texture (wood grain, stone veining or plaster) in soft side light"],
+     ["lightfix","โคมไฟ","a close-up of the feature lighting fixture, glowing softly"],
+     ["joinery","รอยต่อเฟอร์นิเจอร์","a close-up of furniture joinery and edge detail, showing craftsmanship"],
+     ["vignette","มุมแต่งพร็อพ","a styled decor vignette on a shelf or console: books, ceramics and a small plant"],
+     ["kitchen","เคาน์เตอร์ครัว","a close-up of the kitchen counter, backsplash and tap"],
+     ["bath","สุขภัณฑ์ห้องน้ำ","a close-up of the bathroom basin, tap and wall tiles"],
+     ["textile","ผ้า/สิ่งทอ","a close-up of textiles: cushions, throw and upholstery texture"],
+     ["hardware","มือจับ/ฮาร์ดแวร์","a close-up of door or cabinet handles and hardware finish"],
+     ["chair","เก้าอี้/โซฟา","a close-up of the chair or sofa, showing its form and fabric"],
+     ["plant","มุมต้นไม้","a close-up of an indoor plant corner with natural light"],
+     ["floor","แสงบนพื้น","a close-up of sunlight falling across the floor finish"],
+     ["ceiling","ฝ้า/ฝ้าหลุม","a close-up of the ceiling detail with concealed lighting"]]};
+const QDEF={ex4:["shadow","entrance","screen","landscape"],in4:["material","lightfix","joinery","vignette"],
+ ex9:["shadow","entrance","screen","window","roof","wall","slat","light","landscape"],
+ in9:["material","lightfix","joinery","vignette","kitchen","textile","hardware","plant","floor"]};
+const QPOS={4:["Top-left","Top-right","Bottom-left","Bottom-right"],
+ 9:["Top-left","Top-center","Top-right","Middle-left","Center","Middle-right","Bottom-left","Bottom-center","Bottom-right"]};
+const QPOS_TH={4:["บนซ้าย","บนขวา","ล่างซ้าย","ล่างขวา"],9:["บนซ้าย","บนกลาง","บนขวา","กลางซ้าย","ตรงกลาง","กลางขวา","ล่างซ้าย","ล่างกลาง","ล่างขวา"]};
+const qKey=(n)=>(isInterior()?"in":"ex")+n;
+const qPanels=(n)=>{const k=qKey(n), d=QDEF[k]; const cur=(S.q&&S.q[k])||[]; return d.map((x,i)=>cur[i]||x);};
+function makeGrid(c,n){
+  const sc=c.inside?"in":"ex", k=sc+n, ids=qPanels(n);
+  const what=c.hasSrc?`all taken from the ${c.inside?"interior":"building"} design in Image 1`:`all showing ${c.base}`;
+  const out=[`A high-resolution, professional architectural photography collage of ${n===4?"four":"nine"} square close-up photographs arranged in a ${n===4?"2×2":"3×3"} grid, ${what}`];
+  ids.forEach((id,i)=>{const o=QOPT[sc].find(x=>x[0]===id)||QOPT[sc][0]; const note=((S.qn||{})[k+"-"+i]||"").trim();
+    out.push(`${QPOS[n][i]} panel: ${o[2]}${note?", "+note:""}`);});
+  out.push(`each panel has precise, sharp focus on its own subject to highlight a different material texture${c.mats?` (${c.mats})`:""}`);
+  out.push(c.hasSrc?"the lighting, colors and style match Image 1 exactly and stay consistent across all panels":`consistent lighting and color grading across all panels${c.light?", "+c.light:""}`);
+  out.push("clean, modern, high-end look; thin, crisp white grid lines between the photos");
+  return out;
+}
 const pv=c=>c.hasSrc?`the ${c.word} design shown in Image 1`:`a ${c.subject}`;
 const photo=(c,x)=>c.hasSrc?`Turn Image 1 into a photorealistic ${c.word} photograph ${x}`:`A photorealistic ${c.word} photograph of ${c.base} ${x}`;
 const AUTO=[
@@ -326,8 +384,10 @@ const AUTO=[
  {id:"e05",g:"light",scope:"ex",th:"กลางคืน",en:"Night",keep:"scene",light:1,env:1,cam:1,make:c=>[photo(c,"at night"),"dark night sky, warm architectural lighting, uplights on trees, lit windows, gentle reflections"]},
  {id:"e06",g:"light",scope:"ex",th:"หลังฝนตก",en:"After rain",keep:"scene",light:1,env:1,cam:1,make:c=>[photo(c,"just after rain"),"wet reflective ground and paving, soft overcast light, fresh green plants, subtle moody atmosphere"]},
  // ---- details / people / props
- {id:"d07",g:"detail",scope:"in",th:"รายละเอียด 4 ช็อต",en:"Details 4 shots",keep:"design",ar:"1:1",make:c=>[`A 2×2 grid of four close-up detail photographs of ${pv(c)}`,"each panel shows a different detail: material texture, furniture joinery, lighting fixture and a styled decor vignette","consistent lighting, colors and style across all panels, thin white gutters between panels, shallow depth of field"]},
- {id:"d08",g:"detail",scope:"in",th:"รายละเอียด 9 ช็อต",en:"Details 9 shots",keep:"design",ar:"1:1",make:c=>[`A 3×3 grid of nine detail photographs of ${pv(c)}`,"mix of close-ups and medium shots: materials, furniture, lighting, hardware, textiles, plants and decor","consistent lighting and color grading across all nine panels, thin white gutters"]},
+ {id:"d07",g:"detail",scope:"in",th:"รายละเอียด 4 ช็อต",en:"Details 2×2 collage",keep:"design",ar:"1:1",grid:4,noMat:1,make:c=>makeGrid(c,4)},
+ {id:"d08",g:"detail",scope:"in",th:"รายละเอียด 9 ช็อต",en:"Details 3×3 collage",keep:"design",ar:"1:1",grid:9,noMat:1,make:c=>makeGrid(c,9)},
+ {id:"x07",g:"detail",scope:"ex",th:"รายละเอียดภายนอก 4 ช็อต",en:"Exterior details 2×2",keep:"design",ar:"1:1",grid:4,noMat:1,make:c=>makeGrid(c,4)},
+ {id:"x08",g:"detail",scope:"ex",th:"รายละเอียดภายนอก 9 ช็อต",en:"Exterior details 3×3",keep:"design",ar:"1:1",grid:9,noMat:1,make:c=>makeGrid(c,9)},
  {id:"d17",add:1,g:"detail",scope:"all",th:"เพิ่มคน",en:"Add people",keep:"scene",env:1,make:c=>[c.hasSrc?"Add people to Image 1":`A photorealistic ${c.word} photograph of ${c.base} with people`,`two or three people (Asian, smart casual clothing) naturally using the space, correct scale and perspective, lit by the same light as the scene, natural poses, not looking at the camera`,c.hasSrc?"keep everything else exactly the same":""]},
  {id:"d18",add:1,g:"detail",scope:"all",th:"เพิ่มคน แบบเคลื่อนไหว",en:"People in motion",keep:"scene",env:1,make:c=>[c.hasSrc?"Add people in motion to Image 1":`A photorealistic ${c.word} photograph of ${c.base} with people in motion`,"people walking through the space with slight motion blur from a long exposure, the architecture and furniture stay perfectly sharp, lively sense of movement",c.hasSrc?"keep everything else exactly the same":""]},
  {id:"d19",add:1,g:"detail",scope:"in",th:"เพิ่มพร็อพ",en:"Add props",keep:"scene",env:1,make:c=>[c.hasSrc?"Style Image 1 with props":`A photorealistic interior photograph of ${c.base}, fully styled`,"add lifestyle styling props: books, plants, vases, ceramics, throw blankets, cushions, a fruit bowl and artwork, placed naturally without clutter",c.hasSrc?"keep the architecture and main furniture exactly the same":""]},
@@ -351,6 +411,19 @@ const apAllowed=()=>!["siteplan","drawing"].includes(S.mode);
 const apScope=()=>isInterior()?"in":"ex";
 const apList=()=>AUTO.filter(a=>a.scope==="all"||a.scope===apScope());
 const apActive=()=>{ if(!S.auto||!apAllowed()) return null; return apList().find(a=>a.id===S.auto)||null; };
+function buildQuad(){
+  const AP=apActive(), box=$("quadBox");
+  if(!AP||!AP.grid){box.classList.add("hidden");return}
+  box.classList.remove("hidden");
+  $("quadReset").onclick=()=>{const A=apActive(); if(!A||!A.grid) return; const kk=qKey(A.grid); if(S.q) delete S.q[kk]; if(S.qn) Object.keys(S.qn).forEach(x=>{if(x.startsWith(kk+"-")) delete S.qn[x]}); buildQuad(); update();};
+  const n=AP.grid, sc=isInterior()?"in":"ex", k=sc+n, ids=qPanels(n), g=$("quadGrid");
+  g.className="quad g"+n;
+  g.innerHTML=ids.map((id,i)=>`<div class="qcell"><div class="pos">${QPOS_TH[n][i]}</div>
+    <select data-qi="${i}">${QOPT[sc].map(o=>`<option value="${o[0]}" ${o[0]===id?"selected":""}>${o[1]}</option>`).join("")}</select>
+    <input type="text" data-qn="${i}" placeholder="เพิ่มเติม เช่น wooden door" value="${(((S.qn||{})[k+"-"+i])||"").replace(/"/g,"&quot;")}"></div>`).join("");
+  g.querySelectorAll("[data-qi]").forEach(s=>s.onchange=()=>{S.q=S.q||{}; const arr=qPanels(n).slice(); arr[+s.dataset.qi]=s.value; S.q[k]=arr; update();});
+  g.querySelectorAll("[data-qn]").forEach(t=>t.oninput=()=>{S.qn=S.qn||{}; S.qn[k+"-"+t.dataset.qn]=t.value; update();});
+}
 function buildAuto(){
   const box=$("apList"); if(!box) return;
   const list=apList();
@@ -363,7 +436,7 @@ function buildAuto(){
   box.querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>{
     const id=b.dataset.ap; S.auto = (S.auto===id)?"":id;
     const a=AUTO.find(x=>x.id===S.auto); if(a&&a.ar){S.ar=a.ar; $("ar").value=a.ar; $("arCustom").classList.add("hidden");}
-    buildAuto(); update();
+    buildAuto(); buildQuad(); update();
   });
 }
 
@@ -529,11 +602,12 @@ function build(){
   const AP=apActive();
   if(AP){
     const hs=!!srcOf();
-    const c={hasSrc:hs, inside, word:inside?"interior":"exterior", subject, base:`a ${subject}`, mats};
+    const fromImg = hs && AP.keep==="design";   // presentation of an existing design: materials/colors come from Image 1
+    const c={hasSrc:hs, inside, word:inside?"interior":"exterior", subject, base:`a ${subject}`, mats: fromImg?"":mats, light};
     body=AP.make(c).filter(Boolean);
     const onlyAdd = AP.add && hs;   // editing a source image: describe only the addition
-    if(matTxt && !AP.noMat && !onlyAdd) body.push(matTxt);
-    if(colTxt && !AP.noCol && !onlyAdd) body.push(colTxt);
+    if(matTxt && !AP.noMat && !onlyAdd && !fromImg) body.push(matTxt);
+    if(colTxt && !AP.noCol && !onlyAdd && !fromImg) body.push(colTxt);
     if(AP.env && envTxt && !onlyAdd) body.push(envTxt);
     if(!AP.light && light && !AP.text && AP.keep!=="design" && !onlyAdd) body.push(light);
     if(AP.cam && cam && !(hs && S.keep===3)) body.push(cam);
@@ -626,6 +700,7 @@ function build(){
   const mt = MODES[m].th;
   thai.push(`ประเภทงาน: ${mt}`);
   if(AP) thai.push(`Auto Prompt: ${AP.th} (${AP.en})`);
+  if(AP&&AP.grid){const sc=isInterior()?"in":"ex"; thai.push("  ช่อง: "+qPanels(AP.grid).map((id,i)=>`${QPOS_TH[AP.grid][i]}=${(QOPT[sc].find(o=>o[0]===id)||["",""])[1]}`).join(" · "));}
   if(m==="drawing"){
     thai.push(`ภาพต้นฉบับ: ${th("dsrc").join(", ")||"-"} · ชนิดแบบ: ${th("dtype").join(", ")||"-"}`);
     thai.push(`อาคาร/ห้อง: ${(S.bldg.length?th("bldg"):th("room")).join(", ")||"-"}`);
@@ -679,7 +754,7 @@ function update(){
   $("layoutField").classList.toggle("hidden", m==="exterior"||sp||dw);
   $("ldecoField").classList.toggle("hidden", m==="exterior"||sp||dw);
   $("apCard").classList.toggle("hidden", !apAllowed());
-  if(update._apctx!==apScope()+S.mode){update._apctx=apScope()+S.mode; buildAuto();}
+  if(update._apctx!==apScope()+S.mode){update._apctx=apScope()+S.mode; buildAuto(); buildQuad();}
   $("keepField").classList.toggle("hidden", !hasSrc);
   $("keepMax").textContent = sp ? "ล็อกผังเดิม 100%" : dw ? "ล็อกแบบเดิม 100%" : "ล็อกรูปทรงเดิม 100%";
   $("refWrap").classList.toggle("hidden", !hasSrc);
